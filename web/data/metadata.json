@@ -1,0 +1,168 @@
+{
+    "release": {
+        "id": "acs2019_5yr",
+        "name": "ACS 2019 5-year",
+        "years": "2015-2019"
+    },
+    "tables": {
+        "C16001": {
+            "columns": {
+                "C16001001": {
+                    "indent": 0,
+                    "name": "Total:"
+                },
+                "C16001002": {
+                    "indent": 1,
+                    "name": "Speak only English"
+                },
+                "C16001003": {
+                    "indent": 1,
+                    "name": "Spanish:"
+                },
+                "C16001004": {
+                    "indent": 2,
+                    "name": "Speak English \"very well\""
+                },
+                "C16001005": {
+                    "indent": 2,
+                    "name": "Speak English less than \"very well\""
+                },
+                "C16001006": {
+                    "indent": 1,
+                    "name": "French, Haitian, or Cajun:"
+                },
+                "C16001007": {
+                    "indent": 2,
+                    "name": "Speak English \"very well\""
+                },
+                "C16001008": {
+                    "indent": 2,
+                    "name": "Speak English less than \"very well\""
+                },
+                "C16001009": {
+                    "indent": 1,
+                    "name": "German or other West Germanic languages:"
+                },
+                "C16001010": {
+                    "indent": 2,
+                    "name": "Speak English \"very well\""
+                },
+                "C16001011": {
+                    "indent": 2,
+                    "name": "Speak English less than \"very well\""
+                },
+                "C16001012": {
+                    "indent": 1,
+                    "name": "Russian, Polish, or other Slavic languages:"
+                },
+                "C16001013": {
+                    "indent": 2,
+                    "name": "Speak English \"very well\""
+                },
+                "C16001014": {
+                    "indent": 2,
+                    "name": "Speak English less than \"very well\""
+                },
+                "C16001015": {
+                    "indent": 1,
+                    "name": "Other Indo-European languages:"
+                },
+                "C16001016": {
+                    "indent": 2,
+                    "name": "Speak English \"very well\""
+                },
+                "C16001017": {
+                    "indent": 2,
+                    "name": "Speak English less than \"very well\""
+                },
+                "C16001018": {
+                    "indent": 1,
+                    "name": "Korean:"
+                },
+                "C16001019": {
+                    "indent": 2,
+                    "name": "Speak English \"very well\""
+                },
+                "C16001020": {
+                    "indent": 2,
+                    "name": "Speak English less than \"very well\""
+                },
+                "C16001021": {
+                    "indent": 1,
+                    "name": "Chinese (incl. Mandarin, Cantonese):"
+                },
+                "C16001022": {
+                    "indent": 2,
+                    "name": "Speak English \"very well\""
+                },
+                "C16001023": {
+                    "indent": 2,
+                    "name": "Speak English less than \"very well\""
+                },
+                "C16001024": {
+                    "indent": 1,
+                    "name": "Vietnamese:"
+                },
+                "C16001025": {
+                    "indent": 2,
+                    "name": "Speak English \"very well\""
+                },
+                "C16001026": {
+                    "indent": 2,
+                    "name": "Speak English less than \"very well\""
+                },
+                "C16001027": {
+                    "indent": 1,
+                    "name": "Tagalog (incl. Filipino):"
+                },
+                "C16001028": {
+                    "indent": 2,
+                    "name": "Speak English \"very well\""
+                },
+                "C16001029": {
+                    "indent": 2,
+                    "name": "Speak English less than \"very well\""
+                },
+                "C16001030": {
+                    "indent": 1,
+                    "name": "Other Asian and Pacific Island languages:"
+                },
+                "C16001031": {
+                    "indent": 2,
+                    "name": "Speak English \"very well\""
+                },
+                "C16001032": {
+                    "indent": 2,
+                    "name": "Speak English less than \"very well\""
+                },
+                "C16001033": {
+                    "indent": 1,
+                    "name": "Arabic:"
+                },
+                "C16001034": {
+                    "indent": 2,
+                    "name": "Speak English \"very well\""
+                },
+                "C16001035": {
+                    "indent": 2,
+                    "name": "Speak English less than \"very well\""
+                },
+                "C16001036": {
+                    "indent": 1,
+                    "name": "Other and unspecified languages:"
+                },
+                "C16001037": {
+                    "indent": 2,
+                    "name": "Speak English \"very well\""
+                },
+                "C16001038": {
+                    "indent": 2,
+                    "name": "Speak English less than \"very well\""
+                }
+            },
+            "denominator_column_id": "C16001001",
+            "title": "Language Spoken at Home for the Population 5 Years and Over",
+            "universe": "Population 5 Years and Over"
+        }
+    }
+}
