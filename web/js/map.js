@@ -5,6 +5,12 @@ let lon = 0;
 let zl = 3;
 let path = '';
 
+// map args
+let field = 'C16001002';
+let num_classes = 5;
+let scheme = 'quantiles';
+let palette = 'YlOrRd';
+
 // put this in your global variables
 let geojsonPath = 'data/language.json';
 let geojson_data;
@@ -56,19 +62,24 @@ function getGeoJSON(){
 		geojson_data = data;
 
 		// call the map function
-		mapGeoJSON('C16001002',5,'YlOrRd','quantiles');
+		mapGeoJSON();
 	})
 }
-function mapGeoJSON(field,num_classes,color,scheme){
+// function mapGeoJSON(field,num_classes,color,scheme){
+function mapGeoJSON(args){
+
+	// populate args
+	args = args || {};
+	field = args.field || field;
+	num_classes = args.num_classes || num_classes;
+	palette = args.palette || palette;
+	scheme = args.scheme || scheme;
 
 	// clear layers in case it has been mapped already
 	if (geojson_layer){
 		geojson_layer.clearLayers()
 	}
 	
-	// globalize the field to map
-	fieldtomap = field;
-
 	// create an empty array
 	let values = [];
 
@@ -80,7 +91,7 @@ function mapGeoJSON(field,num_classes,color,scheme){
 	// set up the "brew" options
 	brew.setSeries(values);
 	brew.setNumClasses(num_classes);
-	brew.setColorCode(color);
+	brew.setColorCode(palette);
 	brew.classify(scheme);
 
 	// create the layer and add to map
@@ -102,7 +113,7 @@ function getStyle(feature){
 		color: 'white',
 		weight: 0.8,
 		fill: true,
-		fillColor: brew.getColorInRange(feature.properties[fieldtomap]),
+		fillColor: brew.getColorInRange(feature.properties[field]),
 		fillOpacity: 0.8
 	}
 }
@@ -194,7 +205,7 @@ function createInfoPanel(){
 	info_panel.update = function (properties) {
 		// if feature is highlighted
 		if(properties){
-			this._div.innerHTML = `<b>${properties.name}</b><br>${fieldtomap}: ${properties[fieldtomap]}`;
+			this._div.innerHTML = `<b>${properties.name}</b><br>${field}: ${properties[field]}`;
 		}
 		// if feature is not highlighted
 		else
