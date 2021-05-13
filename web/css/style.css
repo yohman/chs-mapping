@@ -30,7 +30,7 @@ body {
 	color: white;
 	grid-area: sidebar;
 	padding:10px;
-	background-color: #555;
+	background-color: #666;
 	overflow: auto;
 }
 
@@ -72,8 +72,28 @@ body {
 	opacity: 0.7;
 }
 
+.item {
+	margin:3px;
+	padding: 10px;
+	cursor: pointer;
+}
+
 .map-item {
-    border: 1px solid #333;
-    padding: 10px;
-    background-color: #111;
+    background-color: #333;
+}
+.layer-item {
+    background-color: #444;
+}
+
+.item:hover {
+	background-color: #111;
+}
+
+.scheme {
+	padding: 5px;
+	background-color: #666;
+	color: #ccc;
+	font-size: 0.8em;
+	margin: 1px;
+	cursor: pointer;
 }

@@ -23,8 +23,17 @@
 		CHS Mapping
 	</div>
 	<div class="sidebar">
-		<div class="map-item" onclick="mapGeoJSON({field:'C16001002'});">Speaks only English</div>
-		<div class="map-item" onclick="mapGeoJSON({field:'C16001003'});">Speaks Spanish</div>
+		<p>
+			Language
+		</p>
+		<div class="item map-item" onclick="mapGeoJSON({field:'C16001002'});">Speaks only English</div>
+		<div class="item map-item" onclick="mapGeoJSON({field:'C16001003'});">Speaks Spanish</div>
+
+		<p>
+			Boundaries [<span onclick="boundary_layer.clearLayers()" style="cursor:pointer">clear</span>]
+		</p>
+		<div class="item layer-item" onclick="addBoundaryLayer('SPA');">Service Planning Area</div>
+		<div class="item layer-item" onclick="addBoundaryLayer('neighborhoods');">Neighborhoods</div>
 	</div>
 	<div class="content">
 		<div id="map"></div>

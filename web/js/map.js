@@ -12,7 +12,7 @@ let scheme = 'quantiles';
 let palette = 'YlOrRd';
 
 // put this in your global variables
-let geojsonPath = 'data/language.json';
+let geojsonPath = 'data/censustracts.geojson';
 let geojson_data;
 let geojson_layer;
 
@@ -35,20 +35,75 @@ $( document ).ready(function() {
 function createMap(lat,lon,zl){
 	map = L.map('map').setView([lat,lon], zl);
 
-	// L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-	// 	attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-	// }).addTo(map);
-
-	L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
-		attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+	
+	let satellite = L.tileLayer('https://api.mapbox.com/styles/v1/yohman/ckon2lqfc00bu17nrdwdtsmke/tiles/512/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoieW9obWFuIiwiYSI6IkxuRThfNFkifQ.u2xRJMiChx914U7mOZMiZw', 
+	{
+		attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox/yohman</a>',
 		maxZoom: 18,
-		id: 'mapbox/satellite-streets-v11',
 		tileSize: 512,
 		zoomOffset: -1,
 		accessToken: 'pk.eyJ1IjoieW9obWFuIiwiYSI6IkxuRThfNFkifQ.u2xRJMiChx914U7mOZMiZw'
 	}).addTo(map);
 
+	map.createPane('labels').style.zIndex = 650;
+	map.createPane('boundaries').style.zIndex = 640;
+	// disable click events
+	map.getPane('labels').style.pointerEvents = 'none';
+	
+	let positronLabels = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png', {
+		// attribution: cartodbAttribution,
+		pane: 'labels'
+	}).addTo(map);
+
+
+
 	map.fitBounds(la_bounds)
+
+}
+
+let boundary_layer;
+let boundary_layers = [
+	{
+		name: 'Service Planning Areas (2012)',
+		short: 'SPA',
+		path: 'data/spa.geojson'
+	},
+	{
+		name: 'LA County Neighborhoods',
+		short: 'neighborhoods',
+		path: 'data/neighborhoods.geojson'
+	},
+]
+
+function addBoundaryLayer(short_name){
+
+	if(boundary_layer)
+	{
+		boundary_layer.clearLayers()
+	}
+
+	// find it in the list of layers
+	layer2add = boundary_layers.find(({short}) => short === short_name)
+	console.log(layer2add)
+
+	if(layer2add != undefined){
+		$.getJSON(layer2add.path,function(data){
+			console.log(data)
+			boundary_options = {
+				fill: false,
+				weight: 1.5,
+				pane:'boundaries'
+			}
+			boundary_layer = L.geoJson(data,boundary_options).addTo(map)
+			// put the data in a global variable
+			// geojson_data = data;
+	
+		})
+	}
+	else{
+		console.log('layer ' + short_name + ' not found')
+	}
+
 
 }
 
@@ -97,7 +152,7 @@ function mapGeoJSON(args){
 	// create the layer and add to map
 	geojson_layer = L.geoJson(geojson_data, {
 		style: getStyle, //call a function to style each feature
-		onEachFeature: onEachFeature // actions on each feature
+		onEachFeature: onEachFeature,
 	}).addTo(map);
 
 	// create the legend
@@ -137,20 +192,26 @@ function createLegend(){
 		breaks = brew.getBreaks(),
 		labels = [],
 		from, to;
-		
+
+		div.innerHTML = `<h4>${field}</h4>`
+
 		for (var i = 0; i < breaks.length; i++) {
 			from = breaks[i];
 			to = breaks[i + 1];
 			if(to) {
 				labels.push(
-					'<i style="background:' + brew.getColorInRange(from) + '"></i> ' +
-					from.toFixed(2) + ' &ndash; ' + to.toFixed(2));
+					'<i style="background:' + brew.getColorInRange(to) + '"></i> ' +
+					from.toFixed(0) + ' &ndash; ' + to.toFixed(0));
 				}
-			}
+		}
 			
-			div.innerHTML = labels.join('<br>');
-			return div;
-		};
+		div.innerHTML += labels.join('<br>');
+		div.innerHTML += '<hr>';
+		div.innerHTML += `<span class='scheme' onclick="mapGeoJSON({scheme:'quantiles'})">quantiles</span>`;
+		div.innerHTML += `<span class='scheme' onclick="mapGeoJSON({scheme:'equal_interval'})">equal interval</span>`;
+		div.innerHTML += `<span class='scheme' onclick="mapGeoJSON({scheme:'jenks'})">jenks</span>`;
+		return div;
+	};
 		
 		legend.addTo(map);
 }
@@ -172,7 +233,7 @@ function highlightFeature(e) {
 	layer.setStyle({
 		weight: 2,
 		color: '#666',
-		fillOpacity: 0.7
+		fillOpacity: 0.3
 	});
 
 	if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
