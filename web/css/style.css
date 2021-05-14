@@ -52,7 +52,7 @@ body {
 	background: rgba(255,255,255,0.8);
 	box-shadow: 0 0 15px rgba(0,0,0,0.2);
 	border-radius: 5px;
-	min-width: 250px;
+	width: 250px;
 	min-height: 50px;
 }
 .info h4 {
@@ -89,9 +89,17 @@ body {
 	background-color: #111;
 }
 
-.scheme {
+.legend-scheme {
 	padding: 5px;
 	background-color: #666;
+	color: #ccc;
+	font-size: 0.8em;
+	margin: 1px;
+	cursor: pointer;
+}
+.legend-color {
+	padding: 5px;
+	background-color: rgb(65, 0, 0);
 	color: #ccc;
 	font-size: 0.8em;
 	margin: 1px;
