@@ -90,6 +90,7 @@ body {
 }
 
 .legend-scheme {
+	border-radius: 2px;
 	padding: 5px;
 	background-color: #666;
 	color: #ccc;
@@ -98,7 +99,9 @@ body {
 	cursor: pointer;
 }
 .legend-color {
-	padding: 5px;
+	float: left;
+	border-radius: 4px;
+	padding: 2px;
 	background-color: rgb(65, 0, 0);
 	color: #ccc;
 	font-size: 0.8em;

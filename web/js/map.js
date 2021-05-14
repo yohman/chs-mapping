@@ -57,7 +57,11 @@ let map_boundaries = [
 
 let map_variables = [
 	{
-		name: 'Spanish & limited English',
+		name: 'Total Population',
+		short: 'total_pop',
+	},
+	{
+		name: 'Limited English',
 		short: 'Limited_Eng_per',
 	},
 	{
@@ -294,7 +298,9 @@ function createLegend(){
 		labels = [],
 		from, to;
 
-		div.innerHTML = `<h4>${field}</h4>`
+		let title = map_variables.find( ({ short }) => short === field)
+		div.innerHTML = `<h4>${title.name}</h4>`
+		// div.innerHTML += `<h4>${field}</h4>`
 
 		for (var i = 0; i < breaks.length; i++) {
 			from = breaks[i];
