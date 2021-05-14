@@ -13,9 +13,9 @@ library(tidycensus)
 
 #define variables - ACS 2019 5-year estimates
 #define variables to be extracted
-acs_vars <- load_variables(2019,"acs5",cache=TRUE)
-acs_vars_p <- load_variables(2019,"acs5/profile",cache=TRUE)
-acs_vars_s <- load_variables(2019,"acs5/subject",cache=TRUE)
+# acs_vars <- load_variables(2019,"acs5",cache=TRUE)
+# acs_vars_p <- load_variables(2019,"acs5/profile",cache=TRUE)
+# acs_vars_s <- load_variables(2019,"acs5/subject",cache=TRUE)
 
 vars <- c("B06007_001",#population (age 5+) for ability to speak english
           "B06007_005",#Spanish & limited English
@@ -32,7 +32,7 @@ vars <- c("B06007_001",#population (age 5+) for ability to speak english
           "B03002_005"#American Indian and Alaska Native
           )
 
-acs_vars <- get_acs(geography = "tract",
+vars_acs <- get_acs(geography = "tract",
                         variables = vars,
                         state = "CA",
                         year = 2019) %>%
@@ -60,4 +60,4 @@ acs_vars <- get_acs(geography = "tract",
                    Hisp_per,
                    NonHisp_ai_per)
 
-write.csv(acs_vars, "./acs_vars_results.csv")
+write.csv(vars_acs, "./acs_vars_results.csv")
