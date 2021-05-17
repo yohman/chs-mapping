@@ -16,6 +16,9 @@
 
    	<!-- classy brew -->
 	<script src="js/classybrew.js"></script>
+
+	<!-- papa parse for csv's -->
+	<script src="js/papaparse.min.js"></script>
 </head>
 <body>
 
@@ -23,17 +26,7 @@
 		CHS Mapping
 	</div>
 	<div class="sidebar">
-		<p>
-			Language
-		</p>
-		<div class="item map-item" onclick="mapGeoJSON({field:'C16001002'});">Speaks only English</div>
-		<div class="item map-item" onclick="mapGeoJSON({field:'C16001003'});">Speaks Spanish</div>
 
-		<p>
-			Boundaries [<span onclick="boundary_layer.clearLayers()" style="cursor:pointer">clear</span>]
-		</p>
-		<div class="item layer-item" onclick="addBoundaryLayer('SPA');">Service Planning Area</div>
-		<div class="item layer-item" onclick="addBoundaryLayer('neighborhoods');">Neighborhoods</div>
 	</div>
 	<div class="content">
 		<div id="map"></div>
