@@ -9,12 +9,13 @@ let path = '';
 let field = 'total_pop';
 let num_classes = 5;
 let scheme = 'quantiles';
-let palette = 'YlOrRd';
 
 // put this in your global variables
-let geojsonPath = 'data/la_tracts.geojson';
+let geojson_scale = 'tracts'; // options: bg (block groups)
+let geojson_path = 'data/la_tracts.geojson';
 let geojson_data;
 let geojson_layer;
+
 
 let brew = new classyBrew();
 let legend = L.control({position: 'bottomright'});
@@ -25,6 +26,7 @@ let la_bounds = [
 	[33.65310164305273,-118.95295500755311]
 ]
 
+let palette = getRandomPalette();
 
 let map_boundary;
 let map_boundaries = [
@@ -56,7 +58,7 @@ let map_boundaries = [
 	{
 		text: 'L.A. Census Block Groups',
 		id: 'bg',
-		path: 'data/la_bg.json'
+		path: 'data/la_bg.geojson'
 	},
 ]
 
@@ -117,6 +119,11 @@ $( document ).ready(function() {
 	getGeoJSON();
 });
 
+function getRandomPalette(){
+	let pal = brew.getColorCodesByType().seq
+	let random_num = Math.floor(Math.random() * pal.length+1)
+	return(pal[random_num])
+}
 // create the map
 function createMap(lat,lon,zl){
 	map = L.map('map').setView([lat,lon], zl);
@@ -130,7 +137,7 @@ function createMap(lat,lon,zl){
 		accessToken: 'pk.eyJ1IjoieW9obWFuIiwiYSI6IkxuRThfNFkifQ.u2xRJMiChx914U7mOZMiZw'
 	}).addTo(map);
 
-	map.createPane('labels').style.zIndex = 650;
+	map.createPane('labels').style.zIndex = 590;
 	map.createPane('boundaries').style.zIndex = 640;
 	
 	// disable click events
@@ -148,7 +155,11 @@ function createMap(lat,lon,zl){
 // function to get the geojson data
 function getGeoJSON(){
 
-	$.getJSON(geojsonPath,function(data){
+	if(geojson_layer){
+		geojson_layer.clearLayers()
+	}
+
+	$.getJSON(geojson_path,function(data){
 		console.log(data)
 
 		// put the data in a global variable
@@ -180,7 +191,7 @@ function getGeoJSON(){
 }
 
 function joinCSV(){
-	Papa.parse('data/acs_vars.csv', {
+	Papa.parse(getDataPath(), {
     download: true,
     header: true,
     complete: function(results) {
@@ -193,6 +204,10 @@ function joinCSV(){
   });
 }
 
+function getDataPath(){
+	return 	(geojson_scale === 'tracts') ? 'data/acs_vars_tracts.csv' : 
+			(geojson_scale === 'bg') ? 'data/acs_vars_bg.csv': ''
+}
 
 // function mapGeoJSON(field,num_classes,color,scheme){
 function mapGeoJSON(args){
@@ -201,7 +216,7 @@ function mapGeoJSON(args){
 	args = args || {};
 	field = args.field || field;
 	num_classes = args.num_classes || num_classes;
-	palette = args.palette || palette;
+	palette = args.palette || getRandomPalette();
 	scheme = args.scheme || scheme;
 
 	// clear layers in case it has been mapped already
@@ -216,7 +231,7 @@ function mapGeoJSON(args){
 	geojson_data.features.forEach(function(item,index){
 		//only add if it's a number
 		if(!isNaN(item.properties[field])){
-			values.push(parseInt(item.properties[field]))
+			values.push(parseFloat(item.properties[field]))
 		}
 	})
 	// set up the "brew" options
@@ -237,11 +252,15 @@ function mapGeoJSON(args){
 
 	// create the infopanel
 	createInfoPanel();
+
+	// add markers for hi/lo values
+	mapHiLo();
 }
 	
 
 function createSidebar(){
 
+	$('.sidebar').html('')
 	// layers
 	$('.sidebar').append(`<p class="sidebar-title">Layers:</p><div id="dropdown-layers"></div>`)
 
@@ -276,7 +295,6 @@ function createSidebar(){
 		placeholder: 'Select a boundary to map',
 		showSearchInputInDropdown: false
 	}).on("change",function(data){
-		console.log(data.value)
 		addBoundaryLayer(data.value)
 	});
 
@@ -288,7 +306,6 @@ function createSidebar(){
 		placeholder: 'Select a FIPS code to map',
 		showSearchInputInDropdown: true
 	}).on("change",function(data){
-		console.log(data.value)
 		zoomToFIPS(data.value)
 	});
 
@@ -355,7 +372,6 @@ function createLegend(){
 		breaks = brew.getBreaks(),
 		labels = [],
 		from, to;
-		console.log(field)
 		let title = map_variables.find( ({ id }) => id === field)
 		div.innerHTML = `<h4>${title.text}</h4>`
 		// div.innerHTML += `<h4>${field}</h4>`
@@ -401,7 +417,6 @@ function onEachFeature(feature, layer) {
 
 // on mouse over, highlight the feature
 function highlightFeature(e) {
-	console.log(e)
 	var layer = e.target;
 
 	// style to use on mouse over
@@ -439,13 +454,11 @@ function createInfoPanel(){
 
 	// method that we will use to update the control based on feature properties passed
 	info_panel.update = function (properties) {
-		console.log(properties)
 
 		// look up full var name
 		// if feature is highlighted
 		if(properties){
 			let var_name = map_variables.filter(item => item.id === field )
-			console.log(var_name)
 			this._div.innerHTML = `<h4>${properties.GEOID}</h4><div style="font-size:4em;padding-top:20px;">${parseInt(properties[field])}%</div><br>${var_name[0].text}`;
 		}
 		// if feature is not highlighted
@@ -478,7 +491,49 @@ function createGeoidList(){
 	geojson_data.features.forEach(function(item){
 		geoid_list.push(item.properties.GEOID)
 	});
-	console.log(geoid_list)
+}
+
+let hilo_markers = L.featureGroup();
+
+let hiIcon = L.icon({
+    iconUrl: 'images/hi.png',
+
+    iconSize:     [40, 45], // size of the icon
+    iconAnchor:   [20, 45], // point of the icon which will correspond to marker's location
+	popupAnchor:  [0,-35]
+});
+
+let loIcon = L.icon({
+    iconUrl: 'images/lo.png',
+
+    iconSize:     [40, 45], // size of the icon
+    iconAnchor:   [20, 45], // point of the icon which will correspond to marker's location
+});
+
+function mapHiLo(){
+	hilo_markers.clearLayers();
+	let max_value = Math.max(...brew.getSeries())
+	let min_value = Math.min(...brew.getSeries())
+	
+	console.log(max_value)
+	console.log(min_value)
+
+	let max_geos = geojson_layer.getLayers().filter(item => parseFloat(item.feature.properties[field]) === max_value)
+	max_geos.forEach(function(item){
+		let marker = L.marker(item.getCenter(),{icon:hiIcon}).bindPopup(`${Math.round(max_value)} %`).on('mouseover',function(){
+			this.openPopup()
+		})
+		hilo_markers.addLayer(marker)
+	})
+
+	// let min_geos = geojson_layer.getLayers().filter(item => parseFloat(item.feature.properties[field]) === min_value)
+	// min_geos.forEach(function(item){
+	// 	let marker = L.marker(item.getCenter(),{icon:loIcon}).bindPopup(`${min_value} %`).on('mouseover',function(){
+	// 		this.openPopup()
+	// 	})
+	// 	hilo_markers.addLayer(marker).bindPopup(``)
+	// })
+	hilo_markers.addTo(map)
 }
 /////////////////////////////////////////////////////////////////////////////////////////////
 //join function//
