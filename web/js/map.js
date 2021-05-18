@@ -68,7 +68,7 @@ let map_variables = [
 	},
 	{
 		// id: 2,
-		text: 'Limited English',
+		text: 'Percent Limited English',
 		id: 'Limited_Eng_per',
 	},
 	{
@@ -113,7 +113,6 @@ let map_variables = [
 
 // initialize
 $( document ).ready(function() {
-	createSidebar();
 	createMap(lat,lon,zl);
 	getGeoJSON();
 });
@@ -154,6 +153,11 @@ function getGeoJSON(){
 
 		// put the data in a global variable
 		geojson_data = data;
+
+		// create a geoid list
+		createGeoidList()
+
+		createSidebar();
 
 		// create the layer and add to map
 		geojson_layer = L.geoJson(geojson_data, {
@@ -237,6 +241,8 @@ function mapGeoJSON(args){
 	
 
 function createSidebar(){
+
+	// layers
 	$('.sidebar').append(`<p class="sidebar-title">Layers:</p><div id="dropdown-layers"></div>`)
 
 	$('#dropdown-layers').selectivity({
@@ -245,10 +251,6 @@ function createSidebar(){
 			// id: '+00:00',
 			text: 'ACS 2019 5-year Estimates',
 			children: map_variables,
-			// submenu: {
-			// 	items: map_variables,
-			// 	showSearchInput: true
-			// }
 		}],
 		placeholder: 'Select a theme to map',
 		showSearchInputInDropdown: false
@@ -270,16 +272,24 @@ function createSidebar(){
 			// id: '+00:00',
 			text: 'Boundaries',
 			children: map_boundaries,
-			// submenu: {
-			// 	items: map_boundaries,
-			// 	showSearchInput: true
-			// }
 		}],
 		placeholder: 'Select a boundary to map',
 		showSearchInputInDropdown: false
 	}).on("change",function(data){
 		console.log(data.value)
 		addBoundaryLayer(data.value)
+	});
+
+	// zoom to fips
+	$('.sidebar').append(`<p class="sidebar-title">Search by FIPS (eventually block code):</p><div id="dropdown-geoids"></div>`)
+	$('#dropdown-geoids').selectivity({
+		allowClear: true,
+		items: geoid_list,
+		placeholder: 'Select a FIPS code to map',
+		showSearchInputInDropdown: true
+	}).on("change",function(data){
+		console.log(data.value)
+		zoomToFIPS(data.value)
 	});
 
 
@@ -373,33 +383,6 @@ function createLegend(){
 			div.innerHTML += `<span class='legend-color' onclick="mapGeoJSON({palette:'${item}'})">${item}</span>`;
 			
 		})
-		// div.innerHTML += `<span class='legend-color' onclick="mapGeoJSON({palette:'YlOrBr'})">quantiles</span>`;
-		// div.innerHTML += `<span class='legend-color' onclick="mapGeoJSON({palette:'YlGnBu'})">quantiles</span>`;
-		// div.innerHTML += `<span class='legend-color' onclick="mapGeoJSON({palette:'PuBuGn'})">quantiles</span>`;
-		// div.innerHTML += `<span class='legend-color' onclick="mapGeoJSON({palette:'RdYlGn'})">quantiles</span>`;
-		// div.innerHTML += `<span class='legend-color' onclick="mapGeoJSON({palette:'RdYlBu'})">quantiles</span>`;
-		// div.innerHTML += `<span class='legend-color' onclick="mapGeoJSON({palette:'OrRd'})">quantiles</span>`;
-		// div.innerHTML += `<span class='legend-color' onclick="mapGeoJSON({palette:'PuBu'})">quantiles</span>`;
-		// div.innerHTML += `<span class='legend-color' onclick="mapGeoJSON({palette:'BuPu'})">quantiles</span>`;
-		// div.innerHTML += `<span class='legend-color' onclick="mapGeoJSON({palette:'Oranges'})">quantiles</span>`;
-		// div.innerHTML += `<span class='legend-color' onclick="mapGeoJSON({palette:'BuGn'})">quantiles</span>`;
-		// div.innerHTML += `<span class='legend-color' onclick="mapGeoJSON({palette:'YlGn'})">quantiles</span>`;
-		// div.innerHTML += `<span class='legend-color' onclick="mapGeoJSON({palette:'Reds'})">quantiles</span>`;
-		// div.innerHTML += `<span class='legend-color' onclick="mapGeoJSON({palette:'Reds'})">quantiles</span>`;
-		/*
-		["OrRd", "PuBu", "BuPu", "Oranges", 
-		"BuGn", "YlOrBr", "YlGn", "Reds", 
-		"RdPu", "Greens", "YlGnBu", "Purples", 
-		"GnBu", "Greys", "YlOrRd", "PuRd", "Blues", 
-		"PuBuGn", "Spectral", "RdYlGn", "RdBu", 
-		"PiYG", "PRGn", "RdYlBu", "BrBG", 
-		"RdGy", "PuOr", "Set2", "Accent", 
-		"Set1", "Set3", "Dark2", "Paired", 
-		"Pastel2", "Pastel1"];
-		*/
-
-
-
 
 		return div;
 	};
@@ -418,13 +401,14 @@ function onEachFeature(feature, layer) {
 
 // on mouse over, highlight the feature
 function highlightFeature(e) {
+	console.log(e)
 	var layer = e.target;
 
 	// style to use on mouse over
 	layer.setStyle({
 		weight: 2,
-		color: '#666',
-		fillOpacity: 0.3
+		color: '#fff',
+		fillOpacity: 0.6
 	});
 
 	if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
@@ -455,9 +439,14 @@ function createInfoPanel(){
 
 	// method that we will use to update the control based on feature properties passed
 	info_panel.update = function (properties) {
+		console.log(properties)
+
+		// look up full var name
 		// if feature is highlighted
 		if(properties){
-			this._div.innerHTML = `<b>${properties.text}</b><br>${field}: ${properties[field]}`;
+			let var_name = map_variables.filter(item => item.id === field )
+			console.log(var_name)
+			this._div.innerHTML = `<h4>${properties.GEOID}</h4><div style="font-size:4em;padding-top:20px;">${parseInt(properties[field])}%</div><br>${var_name[0].text}`;
 		}
 		// if feature is not highlighted
 		else
@@ -469,6 +458,28 @@ function createInfoPanel(){
 	info_panel.addTo(map);
 }
 
+// 
+
+let geoid_list = [];
+
+function zoomToFIPS(fips){
+	let layer = geojson_layer.getLayers().filter(item => item.feature.properties.GEOID === fips)[0];
+	map.fitBounds(layer.getBounds())
+		// style to use on mouse over
+		layer.setStyle({
+			weight: 8,
+			color: '#fff',
+			// fillOpacity: 0.3
+		});
+		layer.bringToFront();
+	
+}
+function createGeoidList(){
+	geojson_data.features.forEach(function(item){
+		geoid_list.push(item.properties.GEOID)
+	});
+	console.log(geoid_list)
+}
 /////////////////////////////////////////////////////////////////////////////////////////////
 //join function//
 /////////////////////////////////////////////////////////////////////////////////////////////
