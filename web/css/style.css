@@ -2,6 +2,7 @@ body,html {
 	margin:0;
 	height:100%;
 	width:100%;
+	font-family: 'Ubuntu', sans-serif;
 }
 
 #map {
@@ -27,13 +28,16 @@ body {
 }
 
 .sidebar {
-	color: white;
+	color: #444;
 	grid-area: sidebar;
 	padding:10px;
 	background-color: #666;
 	overflow: auto;
 }
 
+.sidebar-title {
+	color: #eee;
+}
 .content {
 	grid-area: content;
 }
@@ -73,6 +77,7 @@ body {
 }
 
 .item {
+	color: #ccc;
 	margin:3px;
 	padding: 10px;
 	cursor: pointer;
@@ -107,4 +112,8 @@ body {
 	font-size: 0.8em;
 	margin: 1px;
 	cursor: pointer;
+}
+
+.selectivity-result-label .selectivity-results-container .selectivity-result-item {
+	color: #444;
 }

@@ -12,7 +12,7 @@ let scheme = 'quantiles';
 let palette = 'YlOrRd';
 
 // put this in your global variables
-let geojsonPath = 'data/latracts.geojson';
+let geojsonPath = 'data/la_tracts.geojson';
 let geojson_data;
 let geojson_layer;
 
@@ -29,68 +29,82 @@ let la_bounds = [
 let map_boundary;
 let map_boundaries = [
 	{
-		name: 'Service Planning Areas (2012)',
-		short: 'SPA',
+		text: 'Service Planning Areas (2012)',
+		id: 'SPA',
 		path: 'data/spa.geojson'
 	},
 	{
-		name: 'LA County Supervisors District (2011)',
-		short: 'sd',
+		text: 'LA County Supervisors District (2011)',
+		id: 'sd',
 		path: 'data/sd.geojson'
 	},
 	{
-		name: 'LA County Neighborhoods',
-		short: 'neighborhoods',
+		text: 'LA County Neighborhoods',
+		id: 'neighborhoods',
 		path: 'data/neighborhoods.geojson'
 	},
 	{
-		name: 'LA County Regions',
-		short: 'regions',
+		text: 'LA County Regions',
+		id: 'regions',
 		path: 'data/regions.geojson'
 	},
 	{
-		name: 'L.A. City Council District (2012)',
-		short: 'council',
+		text: 'L.A. City Council District (2012)',
+		id: 'council',
 		path: 'data/council.geojson'
+	},
+	{
+		text: 'L.A. Census Block Groups',
+		id: 'bg',
+		path: 'data/la_bg.json'
 	},
 ]
 
 let map_variables = [
 	{
-		name: 'Total Population',
-		short: 'total_pop',
+		// id: 1,
+		text: 'Total Population',
+		id: 'total_pop',
 	},
 	{
-		name: 'Limited English',
-		short: 'Limited_Eng_per',
+		// id: 2,
+		text: 'Limited English',
+		id: 'Limited_Eng_per',
 	},
 	{
-		name: 'Below 100 percent of the poverty level',
-		short: 'Poverty_per',
+		// id: 3,
+		text: 'Below 100 percent of the poverty level',
+		id: 'Poverty_per',
 	},
 	{
-		name: 'Percent Hispanic or Latino',
-		short: 'Hisp_per',
+		// id: 4,
+		text: 'Percent Hispanic or Latino',
+		id: 'Hisp_per',
 	},
 	{
-		name: 'Percent Non Hispanic Asian',
-		short: 'NonHisp_asian_per',
+		// id: 5,
+		text: 'Percent Non Hispanic Asian',
+		id: 'NonHisp_asian_per',
 	},
 	{
-		name: 'Percent Non Hispanic Black',
-		short: 'NonHisp_black_per',
+		// id: 6,
+		text: 'Percent Non Hispanic Black',
+		id: 'NonHisp_black_per',
 	},
 	{
-		name: 'Percent Non Hispanic White',
-		short: 'NonHisp_white_per',
+		// id: 7,
+		text: 'Percent Non Hispanic White',
+		id: 'NonHisp_white_per',
 	},
 	{
-		name: 'Percent Non Hispanic Native Hawaiian and Other PI',
-		short: 'NonHisp_pi_per',
+		// id: 8,
+		text: 'Percent Non Hispanic Native Hawaiian and Other PI',
+		id: 'NonHisp_pi_per',
 	},
 	{
-		name: 'Percent Non Hispanic American Indian and Alaska Native',
-		short: 'NonHisp_ai_per',
+		// id: 9,
+		text: 'Percent Non Hispanic American Indian and Alaska Native',
+		id: 'NonHisp_ai_per',
 	},
 
 ]
@@ -107,7 +121,6 @@ $( document ).ready(function() {
 // create the map
 function createMap(lat,lon,zl){
 	map = L.map('map').setView([lat,lon], zl);
-
 	
 	let satellite = L.tileLayer('https://api.mapbox.com/styles/v1/yohman/ckon2lqfc00bu17nrdwdtsmke/tiles/512/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoieW9obWFuIiwiYSI6IkxuRThfNFkifQ.u2xRJMiChx914U7mOZMiZw', 
 	{
@@ -120,6 +133,7 @@ function createMap(lat,lon,zl){
 
 	map.createPane('labels').style.zIndex = 650;
 	map.createPane('boundaries').style.zIndex = 640;
+	
 	// disable click events
 	map.getPane('labels').style.pointerEvents = 'none';
 	
@@ -127,10 +141,38 @@ function createMap(lat,lon,zl){
 		// attribution: cartodbAttribution,
 		pane: 'labels'
 	}).addTo(map);
-
-
+	
 	map.fitBounds(la_bounds)
+	
+}
 
+// function to get the geojson data
+function getGeoJSON(){
+
+	$.getJSON(geojsonPath,function(data){
+		console.log(data)
+
+		// put the data in a global variable
+		geojson_data = data;
+
+		// create the layer and add to map
+		geojson_layer = L.geoJson(geojson_data, {
+			
+			stroke: true,
+			color: 'white',
+			weight: 0.8,
+			fill: true,
+			// fillColor: brew.getColorInRange(feature.properties[field]),
+			fillOpacity: 0.5
+			
+		}).addTo(map)
+		
+		// join with csv data
+		joinCSV()
+
+		// call the map function
+		// mapGeoJSON();
+	})
 }
 
 function joinCSV(){
@@ -143,85 +185,11 @@ function joinCSV(){
           featureJoinByProperty(layer.feature.properties, results.data, "GEOID");
         });
 
-		console.log(geojson_layer)
       }
   });
-	
 }
 
-function createSidebar(){
-	$('.sidebar').append(`
-	<p>
-		Layers
-	</p>
-	`)
-	map_variables.forEach(function(item){
-		console.log(item)
-		$('.sidebar').append(`<div class='item map-item' onclick="mapGeoJSON({field:'${item.short}'});">${item.name}</div>`)
-	})
 
-	$('.sidebar').append(`
-	<p>
-		Boundaries [<span onclick="map_boundary.clearLayers()" style="cursor:pointer">clear</span>]
-	</p>
-	`)
-
-	map_boundaries.forEach(function(item){
-		console.log(item)
-		$('.sidebar').append(`<div class='item map-item' onclick="addBoundaryLayer('${item.short}');">${item.name}</div>`)
-	})
-
-
-}
-
-function addBoundaryLayer(short_name){
-
-	if(map_boundary)
-	{
-		map_boundary.clearLayers()
-	}
-
-	// find it in the list of layers
-	layer2add = map_boundaries.find(({short}) => short === short_name)
-	console.log(layer2add)
-
-	if(layer2add != undefined){
-		$.getJSON(layer2add.path,function(data){
-			console.log(data)
-			boundary_options = {
-				fill: false,
-				weight: 1.5,
-				pane:'boundaries'
-			}
-			map_boundary = L.geoJson(data,boundary_options).addTo(map)
-			// put the data in a global variable
-			// geojson_data = data;
-	
-		})
-	}
-	else{
-		console.log('layer ' + short_name + ' not found')
-	}
-
-
-}
-
-// function to get the geojson data
-function getGeoJSON(){
-
-	$.getJSON(geojsonPath,function(data){
-		console.log(data)
-
-		// put the data in a global variable
-		geojson_data = data;
-
-		// join with csv data
-		joinCSV()
-
-		// call the map function
-		mapGeoJSON();
-	})
-}
 // function mapGeoJSON(field,num_classes,color,scheme){
 function mapGeoJSON(args){
 
@@ -247,7 +215,6 @@ function mapGeoJSON(args){
 			values.push(parseInt(item.properties[field]))
 		}
 	})
-	console.log(values)
 	// set up the "brew" options
 	brew.setSeries(values);
 	brew.setNumClasses(num_classes);
@@ -260,11 +227,92 @@ function mapGeoJSON(args){
 		onEachFeature: onEachFeature,
 	}).addTo(map);
 
+	// geojson_layer.setStyle(getStyle).addTo(map)
 	// create the legend
 	createLegend();
 
 	// create the infopanel
 	createInfoPanel();
+}
+	
+
+function createSidebar(){
+	$('.sidebar').append(`<p class="sidebar-title">Layers:</p><div id="dropdown-layers"></div>`)
+
+	$('#dropdown-layers').selectivity({
+		allowClear: true,
+		items: [{
+			// id: '+00:00',
+			text: 'ACS 2019 5-year Estimates',
+			children: map_variables,
+			// submenu: {
+			// 	items: map_variables,
+			// 	showSearchInput: true
+			// }
+		}],
+		placeholder: 'Select a theme to map',
+		showSearchInputInDropdown: false
+	}).on("change",function(data){
+		console.log(data.value)
+		mapGeoJSON({field:data.value})
+	});
+
+	$('.sidebar').append(`
+	<p class="sidebar-title">
+		Boundaries:
+	</p>
+	`)
+	$('.sidebar').append(`<div id="dropdown-boundaries"></div>`)
+
+	$('#dropdown-boundaries').selectivity({
+		allowClear: true,
+		items: [{
+			// id: '+00:00',
+			text: 'Boundaries',
+			children: map_boundaries,
+			// submenu: {
+			// 	items: map_boundaries,
+			// 	showSearchInput: true
+			// }
+		}],
+		placeholder: 'Select a boundary to map',
+		showSearchInputInDropdown: false
+	}).on("change",function(data){
+		console.log(data.value)
+		addBoundaryLayer(data.value)
+	});
+
+
+}
+
+function addBoundaryLayer(id_text){
+
+	if(map_boundary)
+	{
+		map_boundary.clearLayers()
+	}
+
+	// find it in the list of layers
+	layer2add = map_boundaries.find(({id}) => id === id_text)
+
+	if(layer2add != undefined){
+		$.getJSON(layer2add.path,function(data){
+			boundary_options = {
+				fill: false,
+				weight: 1.5,
+				pane:'boundaries'
+			}
+			map_boundary = L.geoJson(data,boundary_options).addTo(map)
+			// put the data in a global variable
+			// geojson_data = data;
+	
+		})
+	}
+	else{
+		console.log('layer ' + id_text + ' not found')
+	}
+
+
 }
 
 function getStyle(feature){
@@ -297,9 +345,9 @@ function createLegend(){
 		breaks = brew.getBreaks(),
 		labels = [],
 		from, to;
-
-		let title = map_variables.find( ({ short }) => short === field)
-		div.innerHTML = `<h4>${title.name}</h4>`
+		console.log(field)
+		let title = map_variables.find( ({ id }) => id === field)
+		div.innerHTML = `<h4>${title.text}</h4>`
 		// div.innerHTML += `<h4>${field}</h4>`
 
 		for (var i = 0; i < breaks.length; i++) {
@@ -409,7 +457,7 @@ function createInfoPanel(){
 	info_panel.update = function (properties) {
 		// if feature is highlighted
 		if(properties){
-			this._div.innerHTML = `<b>${properties.name}</b><br>${field}: ${properties[field]}`;
+			this._div.innerHTML = `<b>${properties.text}</b><br>${field}: ${properties[field]}`;
 		}
 		// if feature is not highlighted
 		else
