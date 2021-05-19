@@ -49,8 +49,10 @@ vars_acs_ct <- get_acs(geography = "tract",
                       Hisp_per = B03002_012/B03002_001 * 100,
                       NonHisp_ai_per = B03002_005/B03002_001 * 100
                ) %>% 
-               rename(Uninsured_per = S2701_C05_001) %>% 
+               rename(Uninsured_per = S2701_C05_001,
+                      Pop_total = B03002_001) %>% 
                select(GEOID, 
+                      Pop_total,
                       Limited_Eng_per,
                       Poverty_per, 
                       Uninsured_per,
@@ -132,7 +134,9 @@ vars_acs_bg <- get_acs(geography = "block group",
                       Hisp_per = B03002_012E/B03002_001E * 100,
                       NonHisp_ai_per = B03002_005E/B03002_001E * 100
                ) %>% 
+               rename(Pop_total = B03002_001E) %>% 
                select(GEOID, 
+                      Pop_total,
                       Limited_Eng_per,
                       Poverty_per, 
                       Uninsured_per,
