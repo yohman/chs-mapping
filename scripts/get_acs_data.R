@@ -63,7 +63,7 @@ vars_acs_ct <- get_acs(geography = "tract",
                       Hisp_per,
                       NonHisp_ai_per)
 
-write.csv(vars_acs_ct, "./acs_vars_results_tracts.csv")
+write.csv(vars_acs_ct, "./acs_vars_tracts.csv")
 
 #block group level
 vars1 <- c("B16004_001",#population (age 5+) for ability to speak english
@@ -147,7 +147,7 @@ vars_acs_bg <- get_acs(geography = "block group",
                       Hisp_per,
                       NonHisp_ai_per)
 
-write.csv(vars_acs_bg, "./acs_vars_results_blockgroups.csv")
+write.csv(vars_acs_bg, "./acs_vars_blockgroups.csv")
 
 
 
