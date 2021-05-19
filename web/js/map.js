@@ -18,7 +18,7 @@ let geojson_layer;
 
 
 let brew = new classyBrew();
-let legend = L.control({position: 'bottomleft'});
+let legend = L.control({position: 'bottomright'});
 let info_panel = L.control();
 
 let la_bounds = [
@@ -256,7 +256,7 @@ function mapGeoJSON(args){
 	createLegend();
 
 	// create the infopanel
-	createInfoPanel();
+	// createInfoPanel();
 
 	// add markers for hi/lo values
 	mapHiLo();
@@ -398,12 +398,11 @@ function createLegend(){
 		div.innerHTML += `<span class='legend-scheme' onclick="mapGeoJSON({scheme:'jenks'})">jenks</span>`;
 
 		// colors
-		div.innerHTML += '<hr>';
+		// div.innerHTML += '<hr>';
 
-		brew.getColorCodesByType().seq.forEach(function(item){
-			div.innerHTML += `<span class='legend-color' onclick="mapGeoJSON({palette:'${item}'})">${item}</span>`;
-			
-		})
+		// brew.getColorCodesByType().seq.forEach(function(item){
+		// 	div.innerHTML += `<span class='legend-color' onclick="mapGeoJSON({palette:'${item}'})">${item}</span>`;
+		// })
 
 		return div;
 	};
@@ -435,13 +434,15 @@ function highlightFeature(e) {
 		layer.bringToFront();
 	}
 
-	info_panel.update(layer.feature.properties)
+	// createChart(layer.feature.properties)
+	// info_panel.update(layer.feature.properties)
+	createChart(layer.feature.properties)
 }
 
 // on mouse out, reset the style, otherwise, it will remain highlighted
 function resetHighlight(e) {
 	geojson_layer.resetStyle(e.target);
-	info_panel.update() // resets infopanel
+	// info_panel.update() // resets infopanel
 }
 
 // on mouse click on a feature, zoom in to it
@@ -451,38 +452,47 @@ function zoomToFeature(e) {
 
 function createInfoPanel(){
 
-	info_panel.onAdd = function (map) {
-		this._div = L.DomUtil.create('div', 'info'); // create a div with a class "info"
-		this.update();
-		return this._div;
-	};
+	if(properties){
+		createChart(properties)
+	}
 
-	// method that we will use to update the control based on feature properties passed
-	info_panel.update = function (properties) {
-		console.log(properties)
-		// look up full var name
-		// if feature is highlighted
-		if(properties){
-			let var_name = map_variables.filter(item => item.id === field )
-			this._div.innerHTML = `<div style="text-align:center"><h4>FIPS: ${properties.GEOID}</h4><div style="font-size:4em;padding-top:20px;">${properties.total_pop}</div><p>persons</p></div>`;
-			// this._div.innerHTML = `<h4>FIPS: ${properties.GEOID}</h4><div style="font-size:4em;padding-top:20px;">${Math.round(parseFloat(properties[field]))}%</div><p>${var_name[0].text} our of ${properties.total_pop} persons</p>`;
+	// info_panel.onAdd = function (map) {
+	// 	this._div = L.DomUtil.create('div', 'info'); // create a div with a class "info"
+	// 	this.update();
+	// 	return this._div;
+	// };
 
-			this._div.innerHTML += '<div id="chart"></div>'
+	// // method that we will use to update the control based on feature properties passed
+	// info_panel.update = function (properties) {
+	// 	console.log(properties)
+	// 	// look up full var name
+	// 	// if feature is highlighted
+	// 	if(properties){
+	// 		let var_name = map_variables.filter(item => item.id === field )
+	// 		this._div.innerHTML = `<div style="text-align:center"><h4>FIPS: ${properties.GEOID}</h4><div style="font-size:4em;padding-top:20px;">${properties.total_pop}</div><p>persons</p></div>`;
+	// 		// this._div.innerHTML = `<h4>FIPS: ${properties.GEOID}</h4><div style="font-size:4em;padding-top:20px;">${Math.round(parseFloat(properties[field]))}%</div><p>${var_name[0].text} our of ${properties.total_pop} persons</p>`;
 
-			createChart(properties)
+	// 		this._div.innerHTML += '<div id="chart"></div>'
 
-		}
-		// if feature is not highlighted
-		else
-		{
-			this._div.innerHTML = 'Hover over an area of interest';
-		}
-	};
+	// 		createChart(properties)
 
-	info_panel.addTo(map);
+	// 	}
+	// 	// if feature is not highlighted
+	// 	else
+	// 	{
+	// 		this._div.innerHTML = 'Hover over an area of interest';
+	// 	}
+	// };
+
+	// info_panel.addTo(map);
 }
 
 function createChart(properties){
+	// empty dashboard
+	$('.dashboard').html(`<div style="text-align:center"><h4>FIPS: ${properties.GEOID}</h4><div style="font-size:4em;">${properties.total_pop}</div><p>persons</p></div>
+	<table width="100%"><tr><td width="33%" id="dash1"></td><td width="33%" id="dash2"></td><td width="33%" id="dash3"></td></tr></table>
+	`);
+
 	// In Poverty
 	var options = {
 		series: [Math.round(properties.Poverty_per)],
@@ -508,7 +518,7 @@ function createChart(properties){
 
 		labels: ['In Poverty'],
 	  };
-	  var chart = new ApexCharts(document.querySelector("#chart"), options);
+	  var chart = new ApexCharts(document.querySelector("#dash1"), options);
 	  chart.render();
 
 	// Limited English
@@ -516,6 +526,7 @@ function createChart(properties){
 		series: [Math.round(properties.Uninsured_per)],
 		chart: {
 			height: 150,
+			width: 100,
 			type: 'radialBar',
 	  	},
 		plotOptions: {
@@ -536,7 +547,7 @@ function createChart(properties){
 
 		labels: ['Uninsured'],
 	  };
-	  var chart = new ApexCharts(document.querySelector("#chart"), options);
+	  var chart = new ApexCharts(document.querySelector("#dash2"), options);
 	  chart.render();
 
 
@@ -566,7 +577,7 @@ function createChart(properties){
 		labels: ['Limited English'],
 	  };
 
-	  var chart = new ApexCharts(document.querySelector("#chart"), options);
+	  var chart = new ApexCharts(document.querySelector("#dash3"), options);
 	  chart.render();
 
 	// Race
@@ -612,7 +623,7 @@ function createChart(properties){
 	  }
 	  };
 
-	  var chart = new ApexCharts(document.querySelector("#chart"), options);
+	  var chart = new ApexCharts(document.querySelector(".dashboard"), options);
 	  chart.render();
 }
 
