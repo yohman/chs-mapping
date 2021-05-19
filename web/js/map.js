@@ -18,7 +18,7 @@ let geojson_layer;
 
 
 let brew = new classyBrew();
-let legend = L.control({position: 'bottomright'});
+let legend = L.control({position: 'bottomleft'});
 let info_panel = L.control();
 
 let la_bounds = [
@@ -387,7 +387,7 @@ function createLegend(){
 			if(to) {
 				labels.push(
 					'<i style="background:' + brew.getColorInRange(to) + '"></i> ' +
-					from.toFixed(0) + ' &ndash; ' + to.toFixed(0));
+					from.toFixed(0) + '% &ndash; ' + to.toFixed(0) + '%');
 				}
 		}
 			
@@ -464,7 +464,13 @@ function createInfoPanel(){
 		// if feature is highlighted
 		if(properties){
 			let var_name = map_variables.filter(item => item.id === field )
-			this._div.innerHTML = `<h4>${properties.GEOID}</h4><div style="font-size:4em;padding-top:20px;">${parseInt(properties[field])}%</div><br>${var_name[0].text} our of ${properties.total_pop} persons`;
+			this._div.innerHTML = `<div style="text-align:center"><h4>FIPS: ${properties.GEOID}</h4><div style="font-size:4em;padding-top:20px;">${properties.total_pop}</div><p>persons</p></div>`;
+			// this._div.innerHTML = `<h4>FIPS: ${properties.GEOID}</h4><div style="font-size:4em;padding-top:20px;">${Math.round(parseFloat(properties[field]))}%</div><p>${var_name[0].text} our of ${properties.total_pop} persons</p>`;
+
+			this._div.innerHTML += '<div id="chart"></div>'
+
+			createChart(properties)
+
 		}
 		// if feature is not highlighted
 		else
@@ -476,7 +482,140 @@ function createInfoPanel(){
 	info_panel.addTo(map);
 }
 
-// 
+function createChart(properties){
+	// In Poverty
+	var options = {
+		series: [Math.round(properties.Poverty_per)],
+		chart: {
+			height: 150,
+			type: 'radialBar',
+	  	},
+		plotOptions: {
+			radialBar: {
+				hollow: {
+					size: '60%',
+				},
+				dataLabels: {
+					show: true,
+					name: {
+						show: true,
+						color: '#888',
+						fontSize: '12px'
+					},
+				},
+			},
+		},
+
+		labels: ['In Poverty'],
+	  };
+	  var chart = new ApexCharts(document.querySelector("#chart"), options);
+	  chart.render();
+
+	// Limited English
+	var options = {
+		series: [Math.round(properties.Uninsured_per)],
+		chart: {
+			height: 150,
+			type: 'radialBar',
+	  	},
+		plotOptions: {
+			radialBar: {
+				hollow: {
+					size: '60%',
+				},
+				dataLabels: {
+					show: true,
+					name: {
+						show: true,
+						color: '#888',
+						fontSize: '12px'
+					},
+				},
+			},
+		},
+
+		labels: ['Uninsured'],
+	  };
+	  var chart = new ApexCharts(document.querySelector("#chart"), options);
+	  chart.render();
+
+
+	// Limited English
+	var options = {
+		series: [Math.round(properties.Limited_Eng_per)],
+		chart: {
+			height: 150,
+			type: 'radialBar',
+	  	},
+		plotOptions: {
+			radialBar: {
+				hollow: {
+					size: '60%',
+				},
+				dataLabels: {
+					show: true,
+					name: {
+						show: true,
+						color: '#888',
+						fontSize: '12px'
+					},
+				},
+			},
+		},
+
+		labels: ['Limited English'],
+	  };
+
+	  var chart = new ApexCharts(document.querySelector("#chart"), options);
+	  chart.render();
+
+	// Race
+
+	let series = [
+		Math.round(properties.Hisp_per),
+		Math.round(properties.NonHisp_white_per),
+		Math.round(properties.NonHisp_black_per),
+		Math.round(properties.NonHisp_asian_per),
+		100-Math.round(properties.Hisp_per)-Math.round(properties.NonHisp_white_per)-Math.round(properties.NonHisp_black_per)-Math.round(properties.NonHisp_asian_per)
+	]
+	let labels = [
+		'% Hispanic',
+		'% White',
+		'% Black',
+		'% Asian',
+		'% Other'
+	]
+	var options = {
+		series: [{
+		data: series
+	  }],
+		chart: {
+		type: 'bar',
+		height: 160
+	  },
+	  plotOptions: {
+		bar: {
+		  borderRadius: 4,
+		  horizontal: true,
+		}
+	  },
+	  dataLabels: {
+		enabled: true,
+		textAnchor: 'start',
+		style: {
+			fontSize: '10px',
+			colors: ['#222']
+		},
+	  },
+	  xaxis: {
+		categories: labels,
+	  }
+	  };
+
+	  var chart = new ApexCharts(document.querySelector("#chart"), options);
+	  chart.render();
+}
+
 
 let geoid_list = [];
 
