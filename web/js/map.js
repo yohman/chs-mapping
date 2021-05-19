@@ -9,12 +9,13 @@ let path = '';
 let field = 'total_pop';
 let num_classes = 5;
 let scheme = 'quantiles';
-let palette = 'YlOrRd';
 
 // put this in your global variables
-let geojsonPath = 'data/latracts.geojson';
+let geojson_scale = 'tracts'; // options: bg (block groups)
+let geojson_path = 'data/la_tracts.geojson';
 let geojson_data;
 let geojson_layer;
+
 
 let brew = new classyBrew();
 let legend = L.control({position: 'bottomright'});
@@ -25,72 +26,87 @@ let la_bounds = [
 	[33.65310164305273,-118.95295500755311]
 ]
 
+let palette = getRandomPalette();
 
 let map_boundary;
 let map_boundaries = [
 	{
-		name: 'Service Planning Areas (2012)',
-		short: 'SPA',
+		text: 'Service Planning Areas (2012)',
+		id: 'SPA',
 		path: 'data/spa.geojson'
 	},
 	{
-		name: 'LA County Supervisors District (2011)',
-		short: 'sd',
+		text: 'LA County Supervisors District (2011)',
+		id: 'sd',
 		path: 'data/sd.geojson'
 	},
 	{
-		name: 'LA County Neighborhoods',
-		short: 'neighborhoods',
+		text: 'LA County Neighborhoods',
+		id: 'neighborhoods',
 		path: 'data/neighborhoods.geojson'
 	},
 	{
-		name: 'LA County Regions',
-		short: 'regions',
+		text: 'LA County Regions',
+		id: 'regions',
 		path: 'data/regions.geojson'
 	},
 	{
-		name: 'L.A. City Council District (2012)',
-		short: 'council',
+		text: 'L.A. City Council District (2012)',
+		id: 'council',
 		path: 'data/council.geojson'
+	},
+	{
+		text: 'L.A. Census Block Groups',
+		id: 'bg',
+		path: 'data/la_bg.geojson'
 	},
 ]
 
 let map_variables = [
 	{
-		name: 'Total Population',
-		short: 'total_pop',
+		// id: 1,
+		text: 'Total Population',
+		id: 'total_pop',
 	},
 	{
-		name: 'Limited English',
-		short: 'Limited_Eng_per',
+		// id: 2,
+		text: 'Percent Limited English',
+		id: 'Limited_Eng_per',
 	},
 	{
-		name: 'Below 100 percent of the poverty level',
-		short: 'Poverty_per',
+		// id: 3,
+		text: 'Below 100 percent of the poverty level',
+		id: 'Poverty_per',
 	},
 	{
-		name: 'Percent Hispanic or Latino',
-		short: 'Hisp_per',
+		// id: 4,
+		text: 'Percent Hispanic or Latino',
+		id: 'Hisp_per',
 	},
 	{
-		name: 'Percent Non Hispanic Asian',
-		short: 'NonHisp_asian_per',
+		// id: 5,
+		text: 'Percent Non Hispanic Asian',
+		id: 'NonHisp_asian_per',
 	},
 	{
-		name: 'Percent Non Hispanic Black',
-		short: 'NonHisp_black_per',
+		// id: 6,
+		text: 'Percent Non Hispanic Black',
+		id: 'NonHisp_black_per',
 	},
 	{
-		name: 'Percent Non Hispanic White',
-		short: 'NonHisp_white_per',
+		// id: 7,
+		text: 'Percent Non Hispanic White',
+		id: 'NonHisp_white_per',
 	},
 	{
-		name: 'Percent Non Hispanic Native Hawaiian and Other PI',
-		short: 'NonHisp_pi_per',
+		// id: 8,
+		text: 'Percent Non Hispanic Native Hawaiian and Other PI',
+		id: 'NonHisp_pi_per',
 	},
 	{
-		name: 'Percent Non Hispanic American Indian and Alaska Native',
-		short: 'NonHisp_ai_per',
+		// id: 9,
+		text: 'Percent Non Hispanic American Indian and Alaska Native',
+		id: 'NonHisp_ai_per',
 	},
 
 ]
@@ -99,15 +115,18 @@ let map_variables = [
 
 // initialize
 $( document ).ready(function() {
-	createSidebar();
 	createMap(lat,lon,zl);
 	getGeoJSON();
 });
 
+function getRandomPalette(){
+	let pal = brew.getColorCodesByType().seq
+	let random_num = Math.floor(Math.random() * pal.length+1)
+	return(pal[random_num])
+}
 // create the map
 function createMap(lat,lon,zl){
 	map = L.map('map').setView([lat,lon], zl);
-
 	
 	let satellite = L.tileLayer('https://api.mapbox.com/styles/v1/yohman/ckon2lqfc00bu17nrdwdtsmke/tiles/512/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoieW9obWFuIiwiYSI6IkxuRThfNFkifQ.u2xRJMiChx914U7mOZMiZw', 
 	{
@@ -118,8 +137,9 @@ function createMap(lat,lon,zl){
 		accessToken: 'pk.eyJ1IjoieW9obWFuIiwiYSI6IkxuRThfNFkifQ.u2xRJMiChx914U7mOZMiZw'
 	}).addTo(map);
 
-	map.createPane('labels').style.zIndex = 650;
+	map.createPane('labels').style.zIndex = 590;
 	map.createPane('boundaries').style.zIndex = 640;
+	
 	// disable click events
 	map.getPane('labels').style.pointerEvents = 'none';
 	
@@ -127,14 +147,51 @@ function createMap(lat,lon,zl){
 		// attribution: cartodbAttribution,
 		pane: 'labels'
 	}).addTo(map);
-
-
+	
 	map.fitBounds(la_bounds)
+	
+}
 
+// function to get the geojson data
+function getGeoJSON(){
+
+	if(geojson_layer){
+		geojson_layer.clearLayers()
+	}
+
+	$.getJSON(geojson_path,function(data){
+		console.log(data)
+
+		// put the data in a global variable
+		geojson_data = data;
+
+		// create a geoid list
+		createGeoidList()
+
+		createSidebar();
+
+		// create the layer and add to map
+		geojson_layer = L.geoJson(geojson_data, {
+			
+			stroke: true,
+			color: 'white',
+			weight: 0.8,
+			fill: true,
+			// fillColor: brew.getColorInRange(feature.properties[field]),
+			fillOpacity: 0.5
+			
+		}).addTo(map)
+		
+		// join with csv data
+		joinCSV()
+
+		// call the map function
+		// mapGeoJSON();
+	})
 }
 
 function joinCSV(){
-	Papa.parse('data/acs_vars.csv', {
+	Papa.parse(getDataPath(), {
     download: true,
     header: true,
     complete: function(results) {
@@ -143,85 +200,15 @@ function joinCSV(){
           featureJoinByProperty(layer.feature.properties, results.data, "GEOID");
         });
 
-		console.log(geojson_layer)
       }
   });
-	
 }
 
-function createSidebar(){
-	$('.sidebar').append(`
-	<p>
-		Layers
-	</p>
-	`)
-	map_variables.forEach(function(item){
-		console.log(item)
-		$('.sidebar').append(`<div class='item map-item' onclick="mapGeoJSON({field:'${item.short}'});">${item.name}</div>`)
-	})
-
-	$('.sidebar').append(`
-	<p>
-		Boundaries [<span onclick="map_boundary.clearLayers()" style="cursor:pointer">clear</span>]
-	</p>
-	`)
-
-	map_boundaries.forEach(function(item){
-		console.log(item)
-		$('.sidebar').append(`<div class='item map-item' onclick="addBoundaryLayer('${item.short}');">${item.name}</div>`)
-	})
-
-
+function getDataPath(){
+	return 	(geojson_scale === 'tracts') ? 'data/acs_vars_tracts.csv' : 
+			(geojson_scale === 'bg') ? 'data/acs_vars_bg.csv': ''
 }
 
-function addBoundaryLayer(short_name){
-
-	if(map_boundary)
-	{
-		map_boundary.clearLayers()
-	}
-
-	// find it in the list of layers
-	layer2add = map_boundaries.find(({short}) => short === short_name)
-	console.log(layer2add)
-
-	if(layer2add != undefined){
-		$.getJSON(layer2add.path,function(data){
-			console.log(data)
-			boundary_options = {
-				fill: false,
-				weight: 1.5,
-				pane:'boundaries'
-			}
-			map_boundary = L.geoJson(data,boundary_options).addTo(map)
-			// put the data in a global variable
-			// geojson_data = data;
-	
-		})
-	}
-	else{
-		console.log('layer ' + short_name + ' not found')
-	}
-
-
-}
-
-// function to get the geojson data
-function getGeoJSON(){
-
-	$.getJSON(geojsonPath,function(data){
-		console.log(data)
-
-		// put the data in a global variable
-		geojson_data = data;
-
-		// join with csv data
-		joinCSV()
-
-		// call the map function
-		mapGeoJSON();
-	})
-}
 // function mapGeoJSON(field,num_classes,color,scheme){
 function mapGeoJSON(args){
 
@@ -229,7 +216,7 @@ function mapGeoJSON(args){
 	args = args || {};
 	field = args.field || field;
 	num_classes = args.num_classes || num_classes;
-	palette = args.palette || palette;
+	palette = args.palette || getRandomPalette();
 	scheme = args.scheme || scheme;
 
 	// clear layers in case it has been mapped already
@@ -244,10 +231,9 @@ function mapGeoJSON(args){
 	geojson_data.features.forEach(function(item,index){
 		//only add if it's a number
 		if(!isNaN(item.properties[field])){
-			values.push(parseInt(item.properties[field]))
+			values.push(parseFloat(item.properties[field]))
 		}
 	})
-	console.log(values)
 	// set up the "brew" options
 	brew.setSeries(values);
 	brew.setNumClasses(num_classes);
@@ -260,11 +246,100 @@ function mapGeoJSON(args){
 		onEachFeature: onEachFeature,
 	}).addTo(map);
 
+	// geojson_layer.setStyle(getStyle).addTo(map)
 	// create the legend
 	createLegend();
 
 	// create the infopanel
 	createInfoPanel();
+
+	// add markers for hi/lo values
+	mapHiLo();
+}
+	
+
+function createSidebar(){
+
+	$('.sidebar').html('')
+	// layers
+	$('.sidebar').append(`<p class="sidebar-title">Layers:</p><div id="dropdown-layers"></div>`)
+
+	$('#dropdown-layers').selectivity({
+		allowClear: true,
+		items: [{
+			// id: '+00:00',
+			text: 'ACS 2019 5-year Estimates',
+			children: map_variables,
+		}],
+		placeholder: 'Select a theme to map',
+		showSearchInputInDropdown: false
+	}).on("change",function(data){
+		console.log(data.value)
+		mapGeoJSON({field:data.value})
+	});
+
+	$('.sidebar').append(`
+	<p class="sidebar-title">
+		Boundaries:
+	</p>
+	`)
+	$('.sidebar').append(`<div id="dropdown-boundaries"></div>`)
+
+	$('#dropdown-boundaries').selectivity({
+		allowClear: true,
+		items: [{
+			// id: '+00:00',
+			text: 'Boundaries',
+			children: map_boundaries,
+		}],
+		placeholder: 'Select a boundary to map',
+		showSearchInputInDropdown: false
+	}).on("change",function(data){
+		addBoundaryLayer(data.value)
+	});
+
+	// zoom to fips
+	$('.sidebar').append(`<p class="sidebar-title">Search by FIPS (eventually block code):</p><div id="dropdown-geoids"></div>`)
+	$('#dropdown-geoids').selectivity({
+		allowClear: true,
+		items: geoid_list,
+		placeholder: 'Select a FIPS code to map',
+		showSearchInputInDropdown: true
+	}).on("change",function(data){
+		zoomToFIPS(data.value)
+	});
+
+
+}
+
+function addBoundaryLayer(id_text){
+
+	if(map_boundary)
+	{
+		map_boundary.clearLayers()
+	}
+
+	// find it in the list of layers
+	layer2add = map_boundaries.find(({id}) => id === id_text)
+
+	if(layer2add != undefined){
+		$.getJSON(layer2add.path,function(data){
+			boundary_options = {
+				fill: false,
+				weight: 1.5,
+				pane:'boundaries'
+			}
+			map_boundary = L.geoJson(data,boundary_options).addTo(map)
+			// put the data in a global variable
+			// geojson_data = data;
+	
+		})
+	}
+	else{
+		console.log('layer ' + id_text + ' not found')
+	}
+
+
 }
 
 function getStyle(feature){
@@ -297,9 +372,8 @@ function createLegend(){
 		breaks = brew.getBreaks(),
 		labels = [],
 		from, to;
-
-		let title = map_variables.find( ({ short }) => short === field)
-		div.innerHTML = `<h4>${title.name}</h4>`
+		let title = map_variables.find( ({ id }) => id === field)
+		div.innerHTML = `<h4>${title.text}</h4>`
 		// div.innerHTML += `<h4>${field}</h4>`
 
 		for (var i = 0; i < breaks.length; i++) {
@@ -325,33 +399,6 @@ function createLegend(){
 			div.innerHTML += `<span class='legend-color' onclick="mapGeoJSON({palette:'${item}'})">${item}</span>`;
 			
 		})
-		// div.innerHTML += `<span class='legend-color' onclick="mapGeoJSON({palette:'YlOrBr'})">quantiles</span>`;
-		// div.innerHTML += `<span class='legend-color' onclick="mapGeoJSON({palette:'YlGnBu'})">quantiles</span>`;
-		// div.innerHTML += `<span class='legend-color' onclick="mapGeoJSON({palette:'PuBuGn'})">quantiles</span>`;
-		// div.innerHTML += `<span class='legend-color' onclick="mapGeoJSON({palette:'RdYlGn'})">quantiles</span>`;
-		// div.innerHTML += `<span class='legend-color' onclick="mapGeoJSON({palette:'RdYlBu'})">quantiles</span>`;
-		// div.innerHTML += `<span class='legend-color' onclick="mapGeoJSON({palette:'OrRd'})">quantiles</span>`;
-		// div.innerHTML += `<span class='legend-color' onclick="mapGeoJSON({palette:'PuBu'})">quantiles</span>`;
-		// div.innerHTML += `<span class='legend-color' onclick="mapGeoJSON({palette:'BuPu'})">quantiles</span>`;
-		// div.innerHTML += `<span class='legend-color' onclick="mapGeoJSON({palette:'Oranges'})">quantiles</span>`;
-		// div.innerHTML += `<span class='legend-color' onclick="mapGeoJSON({palette:'BuGn'})">quantiles</span>`;
-		// div.innerHTML += `<span class='legend-color' onclick="mapGeoJSON({palette:'YlGn'})">quantiles</span>`;
-		// div.innerHTML += `<span class='legend-color' onclick="mapGeoJSON({palette:'Reds'})">quantiles</span>`;
-		// div.innerHTML += `<span class='legend-color' onclick="mapGeoJSON({palette:'Reds'})">quantiles</span>`;
-		/*
-		["OrRd", "PuBu", "BuPu", "Oranges", 
-		"BuGn", "YlOrBr", "YlGn", "Reds", 
-		"RdPu", "Greens", "YlGnBu", "Purples", 
-		"GnBu", "Greys", "YlOrRd", "PuRd", "Blues", 
-		"PuBuGn", "Spectral", "RdYlGn", "RdBu", 
-		"PiYG", "PRGn", "RdYlBu", "BrBG", 
-		"RdGy", "PuOr", "Set2", "Accent", 
-		"Set1", "Set3", "Dark2", "Paired", 
-		"Pastel2", "Pastel1"];
-		*/
-
-
-
 
 		return div;
 	};
@@ -375,8 +422,8 @@ function highlightFeature(e) {
 	// style to use on mouse over
 	layer.setStyle({
 		weight: 2,
-		color: '#666',
-		fillOpacity: 0.3
+		color: '#fff',
+		fillOpacity: 0.6
 	});
 
 	if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
@@ -407,9 +454,12 @@ function createInfoPanel(){
 
 	// method that we will use to update the control based on feature properties passed
 	info_panel.update = function (properties) {
+
+		// look up full var name
 		// if feature is highlighted
 		if(properties){
-			this._div.innerHTML = `<b>${properties.name}</b><br>${field}: ${properties[field]}`;
+			let var_name = map_variables.filter(item => item.id === field )
+			this._div.innerHTML = `<h4>${properties.GEOID}</h4><div style="font-size:4em;padding-top:20px;">${parseInt(properties[field])}%</div><br>${var_name[0].text}`;
 		}
 		// if feature is not highlighted
 		else
@@ -421,6 +471,70 @@ function createInfoPanel(){
 	info_panel.addTo(map);
 }
 
+// 
+
+let geoid_list = [];
+
+function zoomToFIPS(fips){
+	let layer = geojson_layer.getLayers().filter(item => item.feature.properties.GEOID === fips)[0];
+	map.fitBounds(layer.getBounds())
+		// style to use on mouse over
+		layer.setStyle({
+			weight: 8,
+			color: '#fff',
+			// fillOpacity: 0.3
+		});
+		layer.bringToFront();
+	
+}
+function createGeoidList(){
+	geojson_data.features.forEach(function(item){
+		geoid_list.push(item.properties.GEOID)
+	});
+}
+
+let hilo_markers = L.featureGroup();
+
+let hiIcon = L.icon({
+    iconUrl: 'images/hi.png',
+
+    iconSize:     [40, 45], // size of the icon
+    iconAnchor:   [20, 45], // point of the icon which will correspond to marker's location
+	popupAnchor:  [0,-35]
+});
+
+let loIcon = L.icon({
+    iconUrl: 'images/lo.png',
+
+    iconSize:     [40, 45], // size of the icon
+    iconAnchor:   [20, 45], // point of the icon which will correspond to marker's location
+});
+
+function mapHiLo(){
+	hilo_markers.clearLayers();
+	let max_value = Math.max(...brew.getSeries())
+	let min_value = Math.min(...brew.getSeries())
+	
+	console.log(max_value)
+	console.log(min_value)
+
+	let max_geos = geojson_layer.getLayers().filter(item => parseFloat(item.feature.properties[field]) === max_value)
+	max_geos.forEach(function(item){
+		let marker = L.marker(item.getCenter(),{icon:hiIcon}).bindPopup(`${Math.round(max_value)} %`).on('mouseover',function(){
+			this.openPopup()
+		})
+		hilo_markers.addLayer(marker)
+	})
+
+	// let min_geos = geojson_layer.getLayers().filter(item => parseFloat(item.feature.properties[field]) === min_value)
+	// min_geos.forEach(function(item){
+	// 	let marker = L.marker(item.getCenter(),{icon:loIcon}).bindPopup(`${min_value} %`).on('mouseover',function(){
+	// 		this.openPopup()
+	// 	})
+	// 	hilo_markers.addLayer(marker).bindPopup(``)
+	// })
+	hilo_markers.addTo(map)
+}
 /////////////////////////////////////////////////////////////////////////////////////////////
 //join function//
 /////////////////////////////////////////////////////////////////////////////////////////////
