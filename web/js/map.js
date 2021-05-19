@@ -66,12 +66,17 @@ let map_variables = [
 	{
 		// id: 1,
 		text: 'Total Population',
-		id: 'total_pop',
+		id: 'Pop_total',
 	},
 	{
 		// id: 2,
 		text: 'Percent Limited English',
 		id: 'Limited_Eng_per',
+	},
+	{
+		// id: 2,
+		text: 'Percent Uninsured',
+		id: 'Uninsured_per',
 	},
 	{
 		// id: 3,
@@ -205,8 +210,8 @@ function joinCSV(){
 }
 
 function getDataPath(){
-	return 	(geojson_scale === 'tracts') ? 'data/acs_vars_tracts.csv' : 
-			(geojson_scale === 'bg') ? 'data/acs_vars_bg.csv': ''
+	return 	(geojson_scale === 'tracts') ? 'data/acs_vars_results_tracts.csv' : 
+			(geojson_scale === 'bg') ? 'data/acs_vars_results_blockgroups.csv': ''
 }
 
 // function mapGeoJSON(field,num_classes,color,scheme){
@@ -454,12 +459,12 @@ function createInfoPanel(){
 
 	// method that we will use to update the control based on feature properties passed
 	info_panel.update = function (properties) {
-
+		console.log(properties)
 		// look up full var name
 		// if feature is highlighted
 		if(properties){
 			let var_name = map_variables.filter(item => item.id === field )
-			this._div.innerHTML = `<h4>${properties.GEOID}</h4><div style="font-size:4em;padding-top:20px;">${parseInt(properties[field])}%</div><br>${var_name[0].text}`;
+			this._div.innerHTML = `<h4>${properties.GEOID}</h4><div style="font-size:4em;padding-top:20px;">${parseInt(properties[field])}%</div><br>${var_name[0].text} our of ${properties.total_pop} persons`;
 		}
 		// if feature is not highlighted
 		else
