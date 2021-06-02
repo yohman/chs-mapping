@@ -11,9 +11,11 @@ let num_classes = 5;
 let scheme = 'quantiles';
 
 // put this in your global variables
-let geojson_scale = 'tracts'; // options: bg (block groups)
-let geojson_path = 'data/la_tracts.geojson';
-let geojson_data;
+let geojson_scale = 'bg'; // options: bg (block groups)
+let geojson_path_tracts = 'data/la_tracts.geojson';
+let geojson_path_bgs = 'data/la_bg.geojson';
+let geojson_data_tracts;
+let geojson_data_bgs;
 let geojson_layer;
 
 
@@ -129,9 +131,10 @@ function getRandomPalette(){
 	let random_num = Math.floor(Math.random() * pal.length+1)
 	return(pal[random_num])
 }
+
 // create the map
 function createMap(lat,lon,zl){
-	map = L.map('map').setView([lat,lon], zl);
+	map = L.map('map')
 	
 	let satellite = L.tileLayer('https://api.mapbox.com/styles/v1/yohman/ckon2lqfc00bu17nrdwdtsmke/tiles/512/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoieW9obWFuIiwiYSI6IkxuRThfNFkifQ.u2xRJMiChx914U7mOZMiZw', 
 	{
@@ -143,10 +146,11 @@ function createMap(lat,lon,zl){
 	}).addTo(map);
 
 	map.createPane('labels').style.zIndex = 590;
-	map.createPane('boundaries').style.zIndex = 640;
+	map.createPane('boundaries').style.zIndex = 580;
 	
 	// disable click events
 	map.getPane('labels').style.pointerEvents = 'none';
+	// map.getPane('boundaries').style.pointerEvents = 'none';
 	
 	let positronLabels = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png', {
 		// attribution: cartodbAttribution,
@@ -164,35 +168,51 @@ function getGeoJSON(){
 		geojson_layer.clearLayers()
 	}
 
-	$.getJSON(geojson_path,function(data){
+	$.getJSON(geojson_path_tracts,function(data){
+	// $.get,function(data){
+		console.log('tracts:')
 		console.log(data)
 
 		// put the data in a global variable
-		geojson_data = data;
+		geojson_data_tracts = data;
+	}).then(function(){
+		$.getJSON(geojson_path_bgs,function(data){
+			console.log('block groups')
+			console.log(data)
+	
+			// put the data in a global variable
+			geojson_data_bgs = data;
+		}).then(function(){
+			// create a geoid list
+			createGeoidList()
 
-		// create a geoid list
-		createGeoidList()
+			createSidebar();
 
-		createSidebar();
-
-		// create the layer and add to map
-		geojson_layer = L.geoJson(geojson_data, {
+			// create the layer and add to map
+			// geojson_layer = L.geoJson(geojson_data_tracts, {
+			geojson_layer = L.geoJson(geojson_data_bgs, {
+				
+				stroke: true,
+				color: 'white',
+				weight: 0.8,
+				fill: true,
+				// fillColor: brew.getColorInRange(feature.properties[field]),
+				fillOpacity: 0.5
+				
+			}).addTo(map)
 			
-			stroke: true,
-			color: 'white',
-			weight: 0.8,
-			fill: true,
-			// fillColor: brew.getColorInRange(feature.properties[field]),
-			fillOpacity: 0.5
+			// create a geojson for highlighting
+			geojson_highlighted_layer = L.geoJson(geojson_data_bgs,{pane:'boundaries'})
 			
-		}).addTo(map)
-		
-		// join with csv data
-		joinCSV()
+			// join with csv data
+			joinCSV()
 
-		// call the map function
-		// mapGeoJSON();
+			// call the map function
+			// mapGeoJSON();		
+		})
+
 	})
+	// })
 }
 
 function joinCSV(){
@@ -233,12 +253,15 @@ function mapGeoJSON(args){
 	let values = [];
 
 	// based on the provided field, enter each value into the array
-	geojson_data.features.forEach(function(item,index){
+	// geojson_data_tracts.features.forEach(function(item,index){
+	geojson_data_bgs.features.forEach(function(item,index){
 		//only add if it's a number
 		if(!isNaN(item.properties[field])){
 			values.push(parseFloat(item.properties[field]))
 		}
 	})
+
+	console.log(values)
 	// set up the "brew" options
 	brew.setSeries(values);
 	brew.setNumClasses(num_classes);
@@ -246,7 +269,8 @@ function mapGeoJSON(args){
 	brew.classify(scheme);
 
 	// create the layer and add to map
-	geojson_layer = L.geoJson(geojson_data, {
+	// geojson_layer = L.geoJson(geojson_data_tracts, {
+	geojson_layer = L.geoJson(geojson_data_bgs, {
 		style: getStyle, //call a function to style each feature
 		onEachFeature: onEachFeature,
 	}).addTo(map);
@@ -266,8 +290,22 @@ function mapGeoJSON(args){
 function createSidebar(){
 
 	$('.sidebar').html('')
+
+	// zoom to code
+	$('.sidebar').append(`<div class="dropdown" id="dropdown-blocks"></div>`)
+	$('#dropdown-blocks').selectivity({
+		allowClear: true,
+		items: geoid_list_bgs,
+		// items: geoid_list_tracts,
+		placeholder: 'Search by block code',
+		showSearchInputInDropdown: true
+	}).on("change",function(data){
+		zoomToFIPS(data.value)
+	});
+
+
 	// layers
-	$('.sidebar').append(`<p class="sidebar-title">Layers:</p><div id="dropdown-layers"></div>`)
+	$('.sidebar').append(`<div class="dropdown" id="dropdown-layers"></div>`)
 
 	$('#dropdown-layers').selectivity({
 		allowClear: true,
@@ -276,19 +314,19 @@ function createSidebar(){
 			text: 'ACS 2019 5-year Estimates',
 			children: map_variables,
 		}],
-		placeholder: 'Select a theme to map',
+		placeholder: 'Themes',
 		showSearchInputInDropdown: false
 	}).on("change",function(data){
 		console.log(data.value)
 		mapGeoJSON({field:data.value})
 	});
 
-	$('.sidebar').append(`
-	<p class="sidebar-title">
-		Boundaries:
-	</p>
-	`)
-	$('.sidebar').append(`<div id="dropdown-boundaries"></div>`)
+	// $('.sidebar').append(`
+	// <p class="sidebar-title">
+	// 	Boundaries:
+	// </p>
+	// `)
+	$('.sidebar').append(`<div class="dropdown" id="dropdown-boundaries"></div>`)
 
 	$('#dropdown-boundaries').selectivity({
 		allowClear: true,
@@ -297,22 +335,23 @@ function createSidebar(){
 			text: 'Boundaries',
 			children: map_boundaries,
 		}],
-		placeholder: 'Select a boundary to map',
+		placeholder: 'Boundaries',
 		showSearchInputInDropdown: false
 	}).on("change",function(data){
 		addBoundaryLayer(data.value)
 	});
 
 	// zoom to fips
-	$('.sidebar').append(`<p class="sidebar-title">Search by FIPS (eventually block code):</p><div id="dropdown-geoids"></div>`)
-	$('#dropdown-geoids').selectivity({
-		allowClear: true,
-		items: geoid_list,
-		placeholder: 'Select a FIPS code to map',
-		showSearchInputInDropdown: true
-	}).on("change",function(data){
-		zoomToFIPS(data.value)
-	});
+	// $('.sidebar').append(`<div class="dropdown" id="dropdown-geoids"></div>`)
+	// $('#dropdown-geoids').selectivity({
+	// 	allowClear: true,
+	// 	items: geoid_list_tracts,
+	// 	placeholder: 'Select a FIPS code to map',
+	// 	showSearchInputInDropdown: true
+	// }).on("change",function(data){
+	// 	zoomToFIPS(data.value)
+	// });
+
 
 
 }
@@ -336,7 +375,7 @@ function addBoundaryLayer(id_text){
 			}
 			map_boundary = L.geoJson(data,boundary_options).addTo(map)
 			// put the data in a global variable
-			// geojson_data = data;
+			// geojson_data_tracts = data;
 	
 		})
 	}
@@ -351,7 +390,7 @@ function getStyle(feature){
 	return {
 		stroke: true,
 		color: 'white',
-		weight: 0.8,
+		weight: 0.3,
 		fill: true,
 		fillColor: brew.getColorInRange(feature.properties[field]),
 		fillOpacity: 0.8
@@ -450,6 +489,8 @@ function zoomToFeature(e) {
 	map.fitBounds(e.target.getBounds());
 }
 
+let sparkline_data;
+
 function createInfoPanel(){
 
 	if(properties){
@@ -488,8 +529,28 @@ function createInfoPanel(){
 }
 
 function createChart(properties){
+
+	// for now, total pop is different
+	if(geojson_scale === 'bg'){
+		total_pop = properties.Pop_total
+		additional_html = `
+		<div>${properties.CSA_Name}</div>
+		<div>Block code: ${properties.block_code}</div>
+		<div>Agency: ${properties.Agency_1}</div>
+		
+		`
+	}
+	else{
+		total_pop = properties.total_pop
+	}
 	// empty dashboard
-	$('.dashboard').html(`<div style="text-align:center"><h4>FIPS: ${properties.GEOID}</h4><div style="font-size:4em;">${properties.total_pop}</div><p>persons</p></div>
+	$('.dashboard').html(`
+	<div style="text-align:center">
+		<h4>FIPS: ${properties.GEOID}</h4>
+		${additional_html}
+		<div style="font-size:4em;">${total_pop}</div>
+		<p>persons</p>
+	</div>
 	<table width="100%"><tr><td width="33%" id="dash1"></td><td width="33%" id="dash2"></td><td width="33%" id="dash3"></td></tr></table>
 	`);
 
@@ -499,6 +560,9 @@ function createChart(properties){
 		chart: {
 			height: 150,
 			type: 'radialBar',
+			animations: {
+				enabled: false,
+			}
 	  	},
 		plotOptions: {
 			radialBar: {
@@ -528,6 +592,9 @@ function createChart(properties){
 			height: 150,
 			width: 100,
 			type: 'radialBar',
+			animations: {
+				enabled: false,
+			}
 	  	},
 		plotOptions: {
 			radialBar: {
@@ -557,6 +624,9 @@ function createChart(properties){
 		chart: {
 			height: 150,
 			type: 'radialBar',
+			animations: {
+				enabled: false,
+			}
 	  	},
 		plotOptions: {
 			radialBar: {
@@ -575,10 +645,10 @@ function createChart(properties){
 		},
 
 		labels: ['Limited English'],
-	  };
+	};
 
-	  var chart = new ApexCharts(document.querySelector("#dash3"), options);
-	  chart.render();
+	var chart = new ApexCharts(document.querySelector("#dash3"), options);
+	chart.render();
 
 	// Race
 
@@ -597,54 +667,206 @@ function createChart(properties){
 		'% Other'
 	]
 	var options = {
-		series: [{
-		data: series
-	  }],
+			series: [{
+			data: series
+		}],
 		chart: {
-		type: 'bar',
-		height: 160
-	  },
-	  plotOptions: {
-		bar: {
-		  borderRadius: 4,
-		  horizontal: true,
-		}
-	  },
-	  dataLabels: {
-		enabled: true,
-		textAnchor: 'start',
-		style: {
-			fontSize: '10px',
-			colors: ['#222']
+			type: 'bar',
+			height: 160,
+			animations: {
+				enabled: false,
+			}
 		},
-	  },
-	  xaxis: {
-		categories: labels,
-	  }
-	  };
+		plotOptions: {
+			bar: {
+			borderRadius: 4,
+			horizontal: true,
+			}
+		},
+		dataLabels: {
+			enabled: true,
+			textAnchor: 'start',
+			style: {
+				fontSize: '10px',
+				colors: ['#222']
+			},
+		},
+		xaxis: {
+			categories: labels,
+		}
+	};
 
-	  var chart = new ApexCharts(document.querySelector(".dashboard"), options);
-	  chart.render();
+	var chart = new ApexCharts(document.querySelector(".dashboard"), options);
+	chart.render();
+
+
+	// rankings
+	
+	$('#undermap').empty()
+
+	// sparkline_data = [];
+	// geojson_data_tracts.features.forEach(function(item){
+	// 	sparkline_data.push(parseFloat(item.properties[field]))
+
+	// })
+	//  sparkline_data = sparkline_data.filter(function (value) {
+	// 	return !Number.isNaN(value);
+	// });
+	// sparkline_data.sort((a,b) => a-b)
+
+	// index = sparkline_data.findIndex(item => item === parseFloat(properties[field]));
+	// // index = sparkline_data.findIndex(item => item === 8.85188431200701);
+
+	// console.log('index is ' + index)
+	// console.log(properties[field])
+	// var options5 = {
+	// 		series: [{
+	// 		data: sparkline_data
+	// 	}],
+	// 	chart: {
+	// 		type: 'bar',
+	// 		width: '100%',
+	// 		height: 100,
+	// 		sparkline: {
+	// 			enabled: true
+	// 		},
+	// 		animations: {
+	// 			enabled: false,
+	// 		}
+	// 	},
+	// 	// plotOptions: {
+	// 	// 	bar: {
+	// 	// 	columnWidth: '80%'
+	// 	// 	}
+	// 	// },
+	// 	// //   labels: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+	// 	// xaxis: {
+	// 	// 	crosshairs: {
+	// 	// 		width: 1
+	// 	// 	},
+	// 	// },
+	// 	tooltip: {
+	// 		fixed: {
+	// 			enabled: false
+	// 		},
+	// 		x: {
+	// 			show: false
+	// 		},
+	// 		y: {
+	// 		title: {
+	// 			formatter: function (seriesName) {
+	// 			return ''
+	// 			}
+	// 		}
+	// 		},
+	// 		marker: {
+	// 			show: false
+	// 		}
+	// 	},
+	// 	annotations: {
+	// 		xaxis: [
+	// 		  {
+	// 			x: index,
+	// 			borderColor: '#775DD0',
+	// 			label: {
+	// 			  style: {
+	// 				color: '#bbb',
+	// 			  },
+	// 			  text: 'here'
+	// 			}
+	// 		  }
+	// 		]
+	// 	  }
+	//   };
+
+	//   var chart5 = new ApexCharts(document.querySelector("#undermap"), options5);
+	//   chart5.render();
+
+
+	// var trace = {
+	// 	x: x,
+	// 	type: 'histogram',
+	// 	xbins: {
+	// 		start: brew.breaks[0],
+	// 		size:(brew.breaks[brew.breaks.length-1]-brew.breaks[0])/num_classes,
+	// 		end: brew.breaks[brew.breaks.length-1]
+	// 	},
+	// 	marker:{
+	// 		color: ["rgb(241,238,246)", "rgb(215,181,216)", "rgb(223,101,176)", "rgb(221,28,119)", "rgb(152,0,67)"]
+	// 	}
+	//   };
+	// //   trace.marker.color = trace.x.map(function (v) {
+	// // 	//   console.log(v)
+	// // 	return v === 10 ? 'red' : 'blue'
+	// //   });
+	// var data = [trace];
+	// var layout = {
+	// 	autosize: true,
+	// 	// width: ,
+	// 	height: 150,
+	// 	margin: {
+	// 	  l: 50,
+	// 	  r: 50,
+	// 	  b: 40,
+	// 	  t: 20,
+	// 	  pad: 4
+	// 	},
+	// 	xaxis: {title: field}, 
+	// 	bargap: 0.05, 
+	//   };
+	//   	Plotly.newPlot('undermap', data,layout);
+	
+
+
 }
 
 
-let geoid_list = [];
+let geoid_list_tracts = [];
+let geoid_list_bgs = [];
+let geojson_highlighted_layer;
+let highlighted = L.featureGroup();
 
 function zoomToFIPS(fips){
-	let layer = geojson_layer.getLayers().filter(item => item.feature.properties.GEOID === fips)[0];
-	map.fitBounds(layer.getBounds())
-		// style to use on mouse over
-		layer.setStyle({
-			weight: 8,
-			color: '#fff',
-			// fillOpacity: 0.3
-		});
-		layer.bringToFront();
+
+	if(highlighted){
+		highlighted.clearLayers()
+	}
+
+	highlight=geojson_highlighted_layer.getLayers().filter(item => item.feature.properties.GEOID === fips)[0];
+
+	highlighted.addLayer(highlight)
+	map.fitBounds(highlighted.getBounds())
+
+	// style to use on mouse over
+	highlighted.setStyle({
+		weight: 4,
+		color: 'red',
+		pane: 'boundaries',
+		fill: false
+	});
+	highlighted.bringToFront();
+	highlighted.addTo(map)
+
+	// create chart
+
+	// find the data for this fips
+	properties = geojson_data_bgs.features.filter(item => item.properties.GEOID === fips)[0].properties
+	console.log(fips)
+	console.log(properties)
+	createChart(properties)
 	
 }
 function createGeoidList(){
-	geojson_data.features.forEach(function(item){
-		geoid_list.push(item.properties.GEOID)
+	geojson_data_tracts.features.forEach(function(item){
+		geoid_list_tracts.push(item.properties.GEOID)
+	});
+	geojson_data_bgs.features.forEach(function(item){
+		object = {
+			id: item.properties.GEOID,
+			text: `${item.properties.block_code} (${item.properties.CSA_Name})`
+		}
+		geoid_list_bgs.push(object)
+		// geoid_list_bgs.push(item.properties.block_code)
 	});
 }
 

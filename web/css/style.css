@@ -11,10 +11,11 @@ body,html {
 
 body {
 	display: grid;
-	grid-template-rows: 60px 1fr 40px;
+	grid-template-rows: 60px 60px 1fr 40px;
 	grid-template-columns: 250px 1fr 350px;
 	grid-template-areas: 
 	"header header header"
+	"sidebar abovemap dashboard"
 	"sidebar content dashboard"
 	"footer footer footer";
 }
@@ -25,6 +26,11 @@ body {
 	background-color: #333;
 	color: white;
 	font-size: 2em;
+}
+
+.abovemap {
+	background-color: gainsboro;
+	grid-area: abovemap;
 }
 
 .nav {
@@ -39,12 +45,12 @@ body {
 	color: #444;
 	grid-area: sidebar;
 	padding:10px;
-	background-color: #666;
+	background-color: #fff;
 	overflow: auto;
 }
 
 .sidebar-title {
-	color: #eee;
+	color: #333;
 }
 /* 
 .dashboard {
@@ -130,4 +136,8 @@ body {
 
 .selectivity-result-label .selectivity-results-container .selectivity-result-item {
 	color: #444;
+}
+
+.dropdown {
+	margin: 5px;
 }
