@@ -9,14 +9,21 @@ body,html {
 	height: 100%;
 }
 
+h4 {
+	padding: 5px;
+	margin: 5px;
+	border-radius: 5px;
+	background-color: gainsboro;
+}
+
 body {
 	display: grid;
-	grid-template-rows: 60px 60px 1fr 40px;
-	grid-template-columns: 250px 1fr 350px;
+	grid-template-rows: 60px 170px 1fr 40px;
+	grid-template-columns: 350px 1fr 1fr;
 	grid-template-areas: 
 	"header header header"
-	"sidebar abovemap dashboard"
 	"sidebar content dashboard"
+	"legend content dashboard"
 	"footer footer footer";
 }
 
@@ -28,9 +35,9 @@ body {
 	font-size: 2em;
 }
 
-.abovemap {
+.legend {
 	background-color: gainsboro;
-	grid-area: abovemap;
+	grid-area: legend;
 }
 
 .nav {
@@ -70,14 +77,16 @@ body {
 .info {
 	/* text-align: center; */
 
-	padding: 6px 8px;
-	font: 14px/16px Arial, Helvetica, sans-serif;
+	padding: 10px;
+	font-size: 0.8em;
+	padding:20px;
+	/* font: 14px/16px Arial, Helvetica, sans-serif;
 	background: white;
 	background: rgba(255,255,255,0.8);
 	box-shadow: 0 0 15px rgba(0,0,0,0.2);
 	border-radius: 5px;
-	width: 250px;
-	min-height: 50px;
+	/* width: 250px; */
+	/* min-height: 50px; */ 
 }
 .info h4 {
 	margin: 0 0 5px;
@@ -140,4 +149,54 @@ body {
 
 .dropdown {
 	margin: 5px;
+}
+
+
+/*
+	Waffle table
+*/
+
+.waffle-container {
+	display: inline-block;
+	width: 100px;
+}
+
+.waffle-column {
+	/*width: 15px;*/
+	float: left;
+}
+
+.waffle-border {
+	border: 1px solid transparent;
+	float: left;
+}
+
+.waffle-box {
+	width: 8px;
+	height: 8px;
+	background: rgba(49, 79, 79, 0.8);
+}
+
+.waffle-box-empty {
+	width: 8px;
+	/* height: 20px; */
+	background: rgba(49, 79, 79, 0.2);
+}
+
+.smallfont {
+	font-size: 0.6em;
+}
+
+td {
+	vertical-align: top;
+}
+
+.selectivity-single-select {
+	border-radius: 6px !important;
+}
+
+hr {
+	background-color: #bbb;
+	height: 1px;
+	border: none;
 }

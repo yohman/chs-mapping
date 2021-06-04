@@ -1,16 +1,21 @@
-// Global variables
+/* *************************** 
+ 
+	Global variables
+
+**************************** */
+
+// map defaults
 let map;
 let lat = 0;
 let lon = 0;
 let zl = 3;
-let path = '';
 
 // map args
 let field = 'total_pop';
 let num_classes = 5;
 let scheme = 'quantiles';
 
-// put this in your global variables
+// geojson variables
 let geojson_scale = 'bg'; // options: bg (block groups)
 let geojson_path_tracts = 'data/la_tracts.geojson';
 let geojson_path_bgs = 'data/la_bg.geojson';
@@ -18,11 +23,12 @@ let geojson_data_tracts;
 let geojson_data_bgs;
 let geojson_layer;
 
-
+// misc
 let brew = new classyBrew();
 let legend = L.control({position: 'bottomright'});
 let info_panel = L.control();
 
+// zoom default to LA
 let la_bounds = [
 	[34.840471137173814,-117.64558196067811],
 	[33.65310164305273,-118.95295500755311]
@@ -30,7 +36,33 @@ let la_bounds = [
 
 let palette = getRandomPalette();
 
-let map_boundary;
+// map boundaries
+let map_boundary; // hold the current boundary here
+
+// geojson
+let geojson_data = [
+	{
+		text: 'Census Block Groups',
+		id: 'bg',
+		path: 'data/la_bg.geojson',
+		csv: 'data/acs_vars_results_blockgroups.csv',
+	},
+	{
+		text: 'Census Tracts',
+		id: 'bg',
+		path: 'data/la_tracts.geojson',
+		csv: 'data/acs_vars_results_tracts.csv',
+	},
+	{
+		text: 'Neighborhoods',
+		id: 'neighborhoods',
+		path: 'data/latimes_place_lacounty.geojson',
+		csv: 'data/acs_vars_results_tracts.csv',
+	},
+	
+]
+
+// list of boundaries
 let map_boundaries = [
 	{
 		text: 'Service Planning Areas (2012)',
@@ -45,7 +77,7 @@ let map_boundaries = [
 	{
 		text: 'LA County Neighborhoods',
 		id: 'neighborhoods',
-		path: 'data/neighborhoods.geojson'
+		path: 'data/latimes_place_lacounty.geojson'
 	},
 	{
 		text: 'LA County Regions',
@@ -64,78 +96,174 @@ let map_boundaries = [
 	},
 ]
 
+// themes for choropleth
 let map_variables = [
 	{
-		// id: 1,
+		geography: 'bg',
 		text: 'Total Population',
 		id: 'Pop_total',
 	},
 	{
-		// id: 2,
+		geography: 'bg',
 		text: 'Percent Limited English',
 		id: 'Limited_Eng_per',
 	},
 	{
-		// id: 2,
+		geography: 'bg',
 		text: 'Percent Uninsured',
 		id: 'Uninsured_per',
 	},
 	{
-		// id: 3,
+		geography: 'bg',
 		text: 'Below 100 percent of the poverty level',
 		id: 'Poverty_per',
 	},
 	{
-		// id: 4,
+		geography: 'bg',
 		text: 'Percent Hispanic or Latino',
 		id: 'Hisp_per',
 	},
 	{
-		// id: 5,
+		geography: 'bg',
 		text: 'Percent Non Hispanic Asian',
 		id: 'NonHisp_asian_per',
 	},
 	{
-		// id: 6,
+		geography: 'bg',
 		text: 'Percent Non Hispanic Black',
 		id: 'NonHisp_black_per',
 	},
 	{
-		// id: 7,
+		geography: 'bg',
 		text: 'Percent Non Hispanic White',
 		id: 'NonHisp_white_per',
 	},
 	{
-		// id: 8,
+		geography: 'bg',
 		text: 'Percent Non Hispanic Native Hawaiian and Other PI',
 		id: 'NonHisp_pi_per',
 	},
 	{
-		// id: 9,
+		geography: 'bg',
 		text: 'Percent Non Hispanic American Indian and Alaska Native',
 		id: 'NonHisp_ai_per',
 	},
-
 ]
 
+// hi/lo marker indicators for choropleth maps
+let hilo_markers = L.featureGroup();
 
+let hiIcon = L.icon({
+	iconUrl: 'images/hi.png',
 
-// initialize
-$( document ).ready(function() {
-	createMap(lat,lon,zl);
-	getGeoJSON();
+	iconSize:     [40, 45], // size of the icon
+	iconAnchor:   [20, 45], // point of the icon which will correspond to marker's location
+	popupAnchor:  [0,-35]
 });
 
-function getRandomPalette(){
-	let pal = brew.getColorCodesByType().seq
-	let random_num = Math.floor(Math.random() * pal.length+1)
-	return(pal[random_num])
+let loIcon = L.icon({
+	iconUrl: 'images/lo.png',
+
+	iconSize:     [40, 45], // size of the icon
+	iconAnchor:   [20, 45], // point of the icon which will correspond to marker's location
+});
+
+
+let geoid_list_tracts = [];
+let geoid_list_bgs = [];
+let geojson_highlighted_layer;
+let highlighted = L.featureGroup();
+
+/* **************************** 
+
+	Initialize
+
+***************************** */ 
+
+$( document ).ready(function() {
+
+	getData();
+
+	// $.when(createMap())
+	// .then(function(){
+	// 	 getGeoJSON();
+	// })
+	// createMap().then(getGeoJSON());
+});
+
+/* **************************** 
+
+	Get the data
+
+***************************** */ 
+ function getData()
+{
+	$.when(
+		/*
+			Data json files:
+			New datasets need to added as json files. Note that the json file is
+			preceded with defining the json as a javascript object.
+		*/
+		$.getJSON(geojson_path_tracts,function(data){
+			console.log('tracts:')
+			console.log(data)
+	
+			// put the data in a global variable
+			geojson_data_tracts = data;
+		}),
+	
+		$.getJSON(geojson_path_bgs,function(data){
+			console.log('bgs:')
+			console.log(data)
+	
+			// put the data in a global variable
+			geojson_data_bgs = data;
+		})
+	
+
+	).done(function(){
+		// now that all the data has loaded...
+		console.log('all data got')
+		createGeoidList()
+		createSidebar();
+		createMap();
+		joinCSV()
+
+
+
+		geojson_layer = L.geoJson(geojson_data_bgs, {				
+			stroke: true,
+			color: 'white',
+			weight: 0.8,
+			fill: true,
+			fillOpacity: fillOpacity,
+			opacity: fillOpacity,
+			onEachFeature: onEachFeature,
+			
+		}).addTo(map)
+		
+
+
+		// create a geojson for highlighting
+		geojson_highlighted_layer = L.geoJson(geojson_data_bgs,{pane:'boundaries'})
+
+	});
 }
 
-// create the map
-function createMap(lat,lon,zl){
+
+/* **************************** 
+
+	Create the initial map
+
+***************************** */ 
+function createMap(){
 	map = L.map('map')
 	
+	/*
+	
+		default (for now) is mapbox black and white satellite		
+	
+	*/ 
 	let satellite = L.tileLayer('https://api.mapbox.com/styles/v1/yohman/ckon2lqfc00bu17nrdwdtsmke/tiles/512/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoieW9obWFuIiwiYSI6IkxuRThfNFkifQ.u2xRJMiChx914U7mOZMiZw', 
 	{
 		attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox/yohman</a>',
@@ -145,115 +273,66 @@ function createMap(lat,lon,zl){
 		accessToken: 'pk.eyJ1IjoieW9obWFuIiwiYSI6IkxuRThfNFkifQ.u2xRJMiChx914U7mOZMiZw'
 	}).addTo(map);
 
-	map.createPane('labels').style.zIndex = 590;
-	map.createPane('boundaries').style.zIndex = 580;
+	/*
 	
-	// disable click events
-	map.getPane('labels').style.pointerEvents = 'none';
-	// map.getPane('boundaries').style.pointerEvents = 'none';
+		labels
 	
+	*/ 
 	let positronLabels = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png', {
 		// attribution: cartodbAttribution,
 		pane: 'labels'
 	}).addTo(map);
 	
-	map.fitBounds(la_bounds)
+	/*
 	
-}
-
-// function to get the geojson data
-function getGeoJSON(){
-
-	if(geojson_layer){
-		geojson_layer.clearLayers()
-	}
-
-	$.getJSON(geojson_path_tracts,function(data){
-	// $.get,function(data){
-		console.log('tracts:')
-		console.log(data)
-
-		// put the data in a global variable
-		geojson_data_tracts = data;
-	}).then(function(){
-		$.getJSON(geojson_path_bgs,function(data){
-			console.log('block groups')
-			console.log(data)
+		panes
 	
-			// put the data in a global variable
-			geojson_data_bgs = data;
-		}).then(function(){
-			// create a geoid list
-			createGeoidList()
-
-			createSidebar();
-
-			// create the layer and add to map
-			// geojson_layer = L.geoJson(geojson_data_tracts, {
-			geojson_layer = L.geoJson(geojson_data_bgs, {
-				
-				stroke: true,
-				color: 'white',
-				weight: 0.8,
-				fill: true,
-				// fillColor: brew.getColorInRange(feature.properties[field]),
-				fillOpacity: 0.5
-				
-			}).addTo(map)
-			
-			// create a geojson for highlighting
-			geojson_highlighted_layer = L.geoJson(geojson_data_bgs,{pane:'boundaries'})
-			
-			// join with csv data
-			joinCSV()
-
-			// call the map function
-			// mapGeoJSON();		
-		})
-
-	})
-	// })
+	*/ 
+	map.createPane('labels').style.zIndex = 590;
+	map.createPane('boundaries').style.zIndex = 580;
+	
+	// disable click events
+	map.getPane('labels').style.pointerEvents = 'none';
+	
+	// default to Los Angeles
+	map.fitBounds(la_bounds)	
 }
 
-function joinCSV(){
-	Papa.parse(getDataPath(), {
-    download: true,
-    header: true,
-    complete: function(results) {
+/* **************************** 
 
-		geojson_layer.eachLayer(function(layer) {
-          featureJoinByProperty(layer.feature.properties, results.data, "GEOID");
-        });
+	Map themes (choropleths)
 
-      }
-  });
-}
-
-function getDataPath(){
-	return 	(geojson_scale === 'tracts') ? 'data/acs_vars_results_tracts.csv' : 
-			(geojson_scale === 'bg') ? 'data/acs_vars_results_blockgroups.csv': ''
-}
-
-// function mapGeoJSON(field,num_classes,color,scheme){
+***************************** */ 
 function mapGeoJSON(args){
 
-	// populate args
+	/*
+	
+		defaults
+	
+	*/ 
 	args = args || {};
 	field = args.field || field;
 	num_classes = args.num_classes || num_classes;
 	palette = args.palette || getRandomPalette();
 	scheme = args.scheme || scheme;
 
-	// clear layers in case it has been mapped already
+	/*
+	
+		clear layers
+	
+	*/ 
 	if (geojson_layer){
 		geojson_layer.clearLayers()
 	}
 	
-	// create an empty array
+	/*
+	
+		brew it
+	
+	*/ 
 	let values = [];
 
 	// based on the provided field, enter each value into the array
-	// geojson_data_tracts.features.forEach(function(item,index){
 	geojson_data_bgs.features.forEach(function(item,index){
 		//only add if it's a number
 		if(!isNaN(item.properties[field])){
@@ -262,49 +341,71 @@ function mapGeoJSON(args){
 	})
 
 	console.log(values)
-	// set up the "brew" options
+
 	brew.setSeries(values);
 	brew.setNumClasses(num_classes);
 	brew.setColorCode(palette);
 	brew.classify(scheme);
 
-	// create the layer and add to map
-	// geojson_layer = L.geoJson(geojson_data_tracts, {
+	/*
+	
+		map it
+	
+	*/ 
 	geojson_layer = L.geoJson(geojson_data_bgs, {
 		style: getStyle, //call a function to style each feature
 		onEachFeature: onEachFeature,
 	}).addTo(map);
 
-	// geojson_layer.setStyle(getStyle).addTo(map)
 	// create the legend
 	createLegend();
 
-	// create the infopanel
-	// createInfoPanel();
+	$("#transparency").ionRangeSlider({
+		skin: 'flat',
+		min: 0,
+		max: 100,
+		from: 50,
+		onChange: function(data){
+			console.log(data.from)
+			fillOpacity = data.from/100
+			geojson_layer.setStyle({opacity:fillOpacity,fillOpacity:fillOpacity})
+		}
+	});
 
 	// add markers for hi/lo values
 	mapHiLo();
 }
 	
+let fillOpacity = 0.5
+/* **************************** 
 
+	Sidebar
+
+***************************** */ 
 function createSidebar(){
 
 	$('.sidebar').html('')
 
-	// zoom to code
+	/*
+	
+		search by block code
+	
+	*/ 
 	$('.sidebar').append(`<div class="dropdown" id="dropdown-blocks"></div>`)
 	$('#dropdown-blocks').selectivity({
 		allowClear: true,
 		items: geoid_list_bgs,
-		// items: geoid_list_tracts,
 		placeholder: 'Search by block code',
 		showSearchInputInDropdown: true
 	}).on("change",function(data){
 		zoomToFIPS(data.value)
 	});
 
-
-	// layers
+	/*
+	
+		themes
+	
+	*/ 
 	$('.sidebar').append(`<div class="dropdown" id="dropdown-layers"></div>`)
 
 	$('#dropdown-layers').selectivity({
@@ -321,11 +422,11 @@ function createSidebar(){
 		mapGeoJSON({field:data.value})
 	});
 
-	// $('.sidebar').append(`
-	// <p class="sidebar-title">
-	// 	Boundaries:
-	// </p>
-	// `)
+	/*
+	
+		Boundaries
+	
+	*/ 
 	$('.sidebar').append(`<div class="dropdown" id="dropdown-boundaries"></div>`)
 
 	$('#dropdown-boundaries').selectivity({
@@ -341,23 +442,20 @@ function createSidebar(){
 		addBoundaryLayer(data.value)
 	});
 
-	// zoom to fips
-	// $('.sidebar').append(`<div class="dropdown" id="dropdown-geoids"></div>`)
-	// $('#dropdown-geoids').selectivity({
-	// 	allowClear: true,
-	// 	items: geoid_list_tracts,
-	// 	placeholder: 'Select a FIPS code to map',
-	// 	showSearchInputInDropdown: true
-	// }).on("change",function(data){
-	// 	zoomToFIPS(data.value)
-	// });
-
-
-
 }
 
+/* **************************** 
+
+	Boundary layers
+
+***************************** */ 
 function addBoundaryLayer(id_text){
 
+	/*
+	
+		clear
+	
+	*/ 
 	if(map_boundary)
 	{
 		map_boundary.clearLayers()
@@ -374,26 +472,22 @@ function addBoundaryLayer(id_text){
 				pane:'boundaries'
 			}
 			map_boundary = L.geoJson(data,boundary_options).addTo(map)
-			// put the data in a global variable
-			// geojson_data_tracts = data;
-	
 		})
 	}
 	else{
 		console.log('layer ' + id_text + ' not found')
 	}
-
-
 }
 
 function getStyle(feature){
 	return {
 		stroke: true,
 		color: 'white',
-		weight: 0.3,
+		weight: 0.8,
 		fill: true,
 		fillColor: brew.getColorInRange(feature.properties[field]),
-		fillOpacity: 0.8
+		fillOpacity: fillOpacity,
+		opacity: fillOpacity,
 	}
 }
 
@@ -410,15 +504,19 @@ function getColor(d) {
 					  '#FFEDA0';
 }
 
+/* **************************** 
+
+	Legend
+
+***************************** */ 
 function createLegend(){
-	legend.onAdd = function (map) {
+	// legend.onAdd = function (map) {
 		var div = L.DomUtil.create('div', 'info legend'),
 		breaks = brew.getBreaks(),
 		labels = [],
 		from, to;
 		let title = map_variables.find( ({ id }) => id === field)
 		div.innerHTML = `<h4>${title.text}</h4>`
-		// div.innerHTML += `<h4>${field}</h4>`
 
 		for (var i = 0; i < breaks.length; i++) {
 			from = breaks[i];
@@ -431,10 +529,14 @@ function createLegend(){
 		}
 			
 		div.innerHTML += labels.join('<br>');
-		div.innerHTML += '<hr>';
+		div.innerHTML += '<hr>Opacity:';
+		div.innerHTML += '<div id="transparency"></div>';
+		// div.innerHTML += '<hr>';
 		div.innerHTML += `<span class='legend-scheme' onclick="mapGeoJSON({scheme:'quantiles'})">quantiles</span>`;
 		div.innerHTML += `<span class='legend-scheme' onclick="mapGeoJSON({scheme:'equal_interval'})">equal interval</span>`;
-		div.innerHTML += `<span class='legend-scheme' onclick="mapGeoJSON({scheme:'jenks'})">jenks</span>`;
+
+
+		// div.innerHTML += `<span class='legend-scheme' onclick="mapGeoJSON({scheme:'jenks'})">jenks</span>`;
 
 		// colors
 		// div.innerHTML += '<hr>';
@@ -443,12 +545,19 @@ function createLegend(){
 		// 	div.innerHTML += `<span class='legend-color' onclick="mapGeoJSON({palette:'${item}'})">${item}</span>`;
 		// })
 
-		return div;
-	};
+		$('.legend').html(div)
+
+	// 	return div;
+	// };
 		
-		legend.addTo(map);
+	// legend.addTo(map);
 }
 
+/* **************************** 
+
+	Feature actions
+
+***************************** */ 
 // Function that defines what will happen on user interactions with each feature
 function onEachFeature(feature, layer) {
 	layer.on({
@@ -465,23 +574,20 @@ function highlightFeature(e) {
 	// style to use on mouse over
 	layer.setStyle({
 		weight: 2,
-		color: '#fff',
-		fillOpacity: 0.6
+		color: 'red',
+		// fillOpacity: 0.6
 	});
 
 	if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
 		layer.bringToFront();
 	}
 
-	// createChart(layer.feature.properties)
-	// info_panel.update(layer.feature.properties)
 	createChart(layer.feature.properties)
 }
 
 // on mouse out, reset the style, otherwise, it will remain highlighted
 function resetHighlight(e) {
 	geojson_layer.resetStyle(e.target);
-	// info_panel.update() // resets infopanel
 }
 
 // on mouse click on a feature, zoom in to it
@@ -489,55 +595,19 @@ function zoomToFeature(e) {
 	map.fitBounds(e.target.getBounds());
 }
 
-let sparkline_data;
+/* **************************** 
 
-function createInfoPanel(){
+	Dashboard
 
-	if(properties){
-		createChart(properties)
-	}
-
-	// info_panel.onAdd = function (map) {
-	// 	this._div = L.DomUtil.create('div', 'info'); // create a div with a class "info"
-	// 	this.update();
-	// 	return this._div;
-	// };
-
-	// // method that we will use to update the control based on feature properties passed
-	// info_panel.update = function (properties) {
-	// 	console.log(properties)
-	// 	// look up full var name
-	// 	// if feature is highlighted
-	// 	if(properties){
-	// 		let var_name = map_variables.filter(item => item.id === field )
-	// 		this._div.innerHTML = `<div style="text-align:center"><h4>FIPS: ${properties.GEOID}</h4><div style="font-size:4em;padding-top:20px;">${properties.total_pop}</div><p>persons</p></div>`;
-	// 		// this._div.innerHTML = `<h4>FIPS: ${properties.GEOID}</h4><div style="font-size:4em;padding-top:20px;">${Math.round(parseFloat(properties[field]))}%</div><p>${var_name[0].text} our of ${properties.total_pop} persons</p>`;
-
-	// 		this._div.innerHTML += '<div id="chart"></div>'
-
-	// 		createChart(properties)
-
-	// 	}
-	// 	// if feature is not highlighted
-	// 	else
-	// 	{
-	// 		this._div.innerHTML = 'Hover over an area of interest';
-	// 	}
-	// };
-
-	// info_panel.addTo(map);
-}
-
+***************************** */ 
 function createChart(properties){
 
 	// for now, total pop is different
 	if(geojson_scale === 'bg'){
 		total_pop = properties.Pop_total
 		additional_html = `
-		<div>${properties.CSA_Name}</div>
-		<div>Block code: ${properties.block_code}</div>
-		<div>Agency: ${properties.Agency_1}</div>
-		
+		<span style="font-size:2em;color:#666">Block code: ${properties.block_code}</span><br>
+		<span style="font-size:0.6;color:#666">${properties.Agency_1}</span>
 		`
 	}
 	else{
@@ -546,15 +616,20 @@ function createChart(properties){
 	// empty dashboard
 	$('.dashboard').html(`
 	<div style="text-align:center">
-		<h4>FIPS: ${properties.GEOID}</h4>
+		<h4>${properties.CSA_Name}</h4>
 		${additional_html}
+		<h4>Community Profile</h4>
 		<div style="font-size:4em;">${total_pop}</div>
 		<p>persons</p>
 	</div>
 	<table width="100%"><tr><td width="33%" id="dash1"></td><td width="33%" id="dash2"></td><td width="33%" id="dash3"></td></tr></table>
 	`);
 
-	// In Poverty
+	/*
+	
+		Poverty
+	
+	*/ 
 	var options = {
 		series: [Math.round(properties.Poverty_per)],
 		chart: {
@@ -582,10 +657,14 @@ function createChart(properties){
 
 		labels: ['In Poverty'],
 	  };
-	  var chart = new ApexCharts(document.querySelector("#dash1"), options);
-	  chart.render();
+	//   var chart = new ApexCharts(document.querySelector("#dash1"), options);
+	//   chart.render();
 
-	// Limited English
+	/*
+	
+		Uninsured
+	
+	*/ 
 	var options = {
 		series: [Math.round(properties.Uninsured_per)],
 		chart: {
@@ -614,11 +693,15 @@ function createChart(properties){
 
 		labels: ['Uninsured'],
 	  };
-	  var chart = new ApexCharts(document.querySelector("#dash2"), options);
-	  chart.render();
+	//   var chart = new ApexCharts(document.querySelector("#dash2"), options);
+	//   chart.render();
 
 
-	// Limited English
+	/*
+	
+		English
+	
+	*/ 
 	var options = {
 		series: [Math.round(properties.Limited_Eng_per)],
 		chart: {
@@ -647,57 +730,111 @@ function createChart(properties){
 		labels: ['Limited English'],
 	};
 
-	var chart = new ApexCharts(document.querySelector("#dash3"), options);
-	chart.render();
+	// var chart = new ApexCharts(document.querySelector("#dash3"), options);
+	// chart.render();
 
-	// Race
 
-	let series = [
+	/*
+	
+		poverty
+	
+	*/ 
+	var series = [Math.round(properties.Poverty_per),100-Math.round(properties.Poverty_per)]
+	var labels = ['Below poverty level', 'Above poverty level']
+	var wafflevalues = {};
+	wafflevalues.title = 'Poverty';
+	wafflevalues.data = series
+	wafflevalues.labels = labels
+	$('#dash1').html('<div class="col-sm" style="text-align:center">'+createWaffleChart(wafflevalues)+'</div>');
+
+	/*
+	
+		uninsured
+	
+	*/ 
+	var series = [Math.round(properties.Uninsured_per),100-Math.round(properties.Uninsured_per)]
+	var labels = ['Uninsured', 'Insured']
+	var wafflevalues = {};
+	wafflevalues.title = 'Uninsured';
+	wafflevalues.data = series
+	wafflevalues.labels = labels
+	$('#dash2').html('<div class="col-sm" style="text-align:center">'+createWaffleChart(wafflevalues)+'</div>');
+
+	/*
+	
+		English
+	
+	*/ 
+	var series = [Math.round(properties.Limited_Eng_per),100-Math.round(properties.Limited_Eng_per)]
+	var labels = ['Limited English', 'Not Limited']
+	var wafflevalues = {};
+	wafflevalues.title = 'English';
+	wafflevalues.data = series
+	wafflevalues.labels = labels
+	$('#dash3').html('<div class="col-sm" style="text-align:center">'+createWaffleChart(wafflevalues)+'</div>');
+
+
+	/*
+	
+		Race
+	
+	*/ 
+	var series = [
 		Math.round(properties.Hisp_per),
 		Math.round(properties.NonHisp_white_per),
 		Math.round(properties.NonHisp_black_per),
 		Math.round(properties.NonHisp_asian_per),
 		100-Math.round(properties.Hisp_per)-Math.round(properties.NonHisp_white_per)-Math.round(properties.NonHisp_black_per)-Math.round(properties.NonHisp_asian_per)
 	]
-	let labels = [
-		'% Hispanic',
-		'% White',
-		'% Black',
-		'% Asian',
-		'% Other'
+	var labels = [
+		'Hispanic',
+		'White',
+		'Black',
+		'Asian',
+		'Other'
 	]
-	var options = {
-			series: [{
-			data: series
-		}],
-		chart: {
-			type: 'bar',
-			height: 160,
-			animations: {
-				enabled: false,
-			}
-		},
-		plotOptions: {
-			bar: {
-			borderRadius: 4,
-			horizontal: true,
-			}
-		},
-		dataLabels: {
-			enabled: true,
-			textAnchor: 'start',
-			style: {
-				fontSize: '10px',
-				colors: ['#222']
-			},
-		},
-		xaxis: {
-			categories: labels,
-		}
-	};
 
-	var chart = new ApexCharts(document.querySelector(".dashboard"), options);
-	chart.render();
+
+	// race waffle
+	var wafflevalues = {};
+	wafflevalues.title = 'Race';
+	wafflevalues.data = series
+	wafflevalues.labels = labels
+	$('.dashboard').append('<div class="col-sm" style="text-align:center">'+createWaffleChart(wafflevalues)+'</div>');
+
+
+	// var options = {
+	// 		series: [{
+	// 		data: series
+	// 	}],
+	// 	chart: {
+	// 		type: 'bar',
+	// 		height: 160,
+	// 		animations: {
+	// 			enabled: false,
+	// 		}
+	// 	},
+	// 	plotOptions: {
+	// 		bar: {
+	// 		borderRadius: 4,
+	// 		horizontal: true,
+	// 		}
+	// 	},
+	// 	dataLabels: {
+	// 		enabled: true,
+	// 		textAnchor: 'start',
+	// 		style: {
+	// 			fontSize: '10px',
+	// 			colors: ['#222']
+	// 		},
+	// 	},
+	// 	xaxis: {
+	// 		categories: labels,
+	// 	}
+	// };
+
+	// var chart = new ApexCharts(document.querySelector(".dashboard"), options);
+	// chart.render();
 
 
 	// rankings
@@ -821,10 +958,25 @@ function createChart(properties){
 }
 
 
-let geoid_list_tracts = [];
-let geoid_list_bgs = [];
-let geojson_highlighted_layer;
-let highlighted = L.featureGroup();
+function joinCSV(){
+	Papa.parse(getDataPath(), {
+	download: true,
+	header: true,
+	complete: function(results) {
+
+		geojson_layer.eachLayer(function(layer) {
+		  featureJoinByProperty(layer.feature.properties, results.data, "GEOID");
+		});
+
+	  }
+  });
+}
+
+function getDataPath(){
+	return 	(geojson_scale === 'tracts') ? 'data/acs_vars_results_tracts.csv' : 
+			(geojson_scale === 'bg') ? 'data/acs_vars_results_blockgroups.csv': ''
+}
+
 
 function zoomToFIPS(fips){
 
@@ -870,23 +1022,6 @@ function createGeoidList(){
 	});
 }
 
-let hilo_markers = L.featureGroup();
-
-let hiIcon = L.icon({
-    iconUrl: 'images/hi.png',
-
-    iconSize:     [40, 45], // size of the icon
-    iconAnchor:   [20, 45], // point of the icon which will correspond to marker's location
-	popupAnchor:  [0,-35]
-});
-
-let loIcon = L.icon({
-    iconUrl: 'images/lo.png',
-
-    iconSize:     [40, 45], // size of the icon
-    iconAnchor:   [20, 45], // point of the icon which will correspond to marker's location
-});
-
 function mapHiLo(){
 	hilo_markers.clearLayers();
 	let max_value = Math.max(...brew.getSeries())
@@ -912,6 +1047,14 @@ function mapHiLo(){
 	// })
 	hilo_markers.addTo(map)
 }
+
+
+function getRandomPalette(){
+	let pal = brew.getColorCodesByType().seq
+	let random_num = Math.floor(Math.random() * pal.length+1)
+	return(pal[random_num])
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////
 //join function//
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -934,3 +1077,67 @@ function featureJoinByProperty(fProps, dTable, joinKey) {
 	  }
 	}
   }
+
+
+
+function createWaffleChart(values)
+{
+	// var values = [40,20,10,5];
+	var sum = 0;
+	$.each(values.data,function(i,val){
+		sum += val;
+	})
+
+	var normalizedValues = [];
+	$.each(values.data,function(i,val){
+		normalizedValues.push(Math.round(val/sum*100))
+	})
+	var count = 0;
+
+	// waffle table
+	var waffle = '';
+	// var waffle = '<div class="container" style="text-align:center">';
+
+	// waffle it
+	waffle += '<div class="row waffle-container" style="margin: 5px;text-align:center">';
+
+	colorPallete = ['#6A3D9A','#FF7F00','#33A02C','#1F78B4','#E31A1C'];
+	
+	/*
+	
+		title
+	
+	*/ 
+	waffle += '<h4>'+values.title+'</h4>';
+
+	/*
+	
+		waffle
+	
+	*/ 
+	$.each(normalizedValues,function(i,val){
+		for (var j = 0; j < val; j++)
+		{
+			waffle += '<div class="waffle-border" style="float:left;"><div class="waffle-box" style="background-color:'+colorPallete[i]+'"></div></div>';
+		}
+	})
+	// waffle += '</div>';
+
+
+	/*
+	
+		legend
+	
+	*/ 
+	// stats and values
+	waffle += '<table class="table table-sm table-condensed smallfont" style="text-align:left;">';
+
+	for (var i = 0; i < values.data.length; i++) {
+		waffle += '<tr><td><div class="waffle-box-empty smallfont" style="background-color:'+colorPallete[i]+'"> &nbsp&nbsp&nbsp&nbsp</div></td><td>'+values.labels[i]+' ('+normalizedValues[i]+'%)</td><td><div class="waffle-border" style="float:left;"></div></td></tr>';
+		// waffle += '<tr><td width="60%"><div class="waffle-box-empty smallfont" style="background-color:'+mdbla.colorPallete[i]+'"> &nbsp&nbsp&nbsp&nbsp'+values.labels[i]+'</div></td><td class="smallfont" width="40%" align="right">'+values.data[i]+' ('+normalizedValues[i]+'%)</td><td><div class="waffle-border" style="float:left;"></div></td></tr>';
+	}
+
+	waffle += '</table></div>'
+
+	return waffle;
+}
