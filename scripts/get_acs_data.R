@@ -4,6 +4,8 @@
 #Load packages
 library(tidyverse)
 library(tidycensus)
+library(sf)
+library(geojsonio)
 
 #Load your Census API Key
 ##For first time use, request a key via: https://api.census.gov/data/key_signup.html 
@@ -94,10 +96,10 @@ vars1 <- c("B16004_001",#population (age 5+) for ability to speak english
            "B17021_001",#population for whom poverty status is determined
            "B17021_002",#Below 100 percent of the poverty level
            "B27010_001",#Civilian noninstitutionalized population for health coverage
-           "B27010_017", #uninsured & age 0-18
-           "B27010_033", #uninsured & age 19-34
-           "B27010_050", #uninsured & age 35-64
-           "B27010_066", #uninsured & age 65+
+           "B27010_017",#uninsured & age 0-18
+           "B27010_033",#uninsured & age 19-34
+           "B27010_050",#uninsured & age 35-64
+           "B27010_066",#uninsured & age 65+
            "B03002_001",#total population
            "B03002_006",#Asian
            "B03002_007",#Native Hawaiian and Other PI
@@ -149,7 +151,23 @@ vars_acs_bg <- get_acs(geography = "block group",
 
 write.csv(vars_acs_bg, "./acs_vars_blockgroups.csv")
 
+#get boundary shapefiles from census.gov
+bg_source <- "https://www2.census.gov/geo/tiger/GENZ2020/shp/cb_2020_06_bg_500k.zip"
+bg_path <- "Bo/GIS/cb_2020_06_bg_500k.shp"
 
+#download file only if not already in directory
+if (file.exists(bg_path) == FALSE) {
+  download.file(url = bg_source,
+                destfile = "Bo/cb_2020_06_bg_500k.zip")
+  unzip("Bo/cb_2020_06_bg_500k.zip",
+        exdir = "Bo/GIS")
+  file.remove("Bo/cb_2020_06_bg_500k.zip")
+}
 
+## read census tract file
+bg_lacounty <- st_read(bg_path) %>% 
+               st_transform(4326) %>% 
+               filter(COUNTYFP == "037")
 
-
+st_write(bg_lacounty, "./web/data/boundary files/bg.geojson")
+#topojson_write(bg_lacounty, "./web/data/boundary files/bg.topojson")
