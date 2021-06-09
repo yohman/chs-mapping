@@ -152,22 +152,23 @@ vars_acs_bg <- get_acs(geography = "block group",
 write.csv(vars_acs_bg, "./acs_vars_blockgroups.csv")
 
 #get boundary shapefiles from census.gov
-bg_source <- "https://www2.census.gov/geo/tiger/GENZ2020/shp/cb_2020_06_bg_500k.zip"
-bg_path <- "Bo/GIS/cb_2020_06_bg_500k.shp"
+bg_source <- "https://www2.census.gov/geo/tiger/GENZ2019/shp/cb_2019_06_bg_500k.zip"
+bg_path <- "Bo/GIS/cb_2019_06_bg_500k.shp"
 
 #download file only if not already in directory
 if (file.exists(bg_path) == FALSE) {
   download.file(url = bg_source,
-                destfile = "Bo/cb_2020_06_bg_500k.zip")
-  unzip("Bo/cb_2020_06_bg_500k.zip",
+                destfile = "Bo/cb_2019_06_bg_500k.zip")
+  unzip("Bo/cb_2019_06_bg_500k.zip",
         exdir = "Bo/GIS")
-  file.remove("Bo/cb_2020_06_bg_500k.zip")
+  file.remove("Bo/cb_2019_06_bg_500k.zip")
 }
 
 ## read census tract file
 bg_lacounty <- st_read(bg_path) %>% 
                st_transform(4326) %>% 
-               filter(COUNTYFP == "037")
+               filter(COUNTYFP == "037") %>% 
+               select(GEOID)
 
 st_write(bg_lacounty, "./web/data/boundary files/bg.geojson")
 #topojson_write(bg_lacounty, "./web/data/boundary files/bg.topojson")
