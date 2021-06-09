@@ -20,7 +20,7 @@ let geojson_scale = 'bg'; // options: bg (block groups)
 let geojson_path_tracts = 'data/la_tracts.geojson';
 let geojson_path_bgs = 'data/la_bg.geojson';
 let geojson_data_tracts;
-let geojson_data_bgs;
+let geojson_data_bgs,geojson_data_bgs_google,geojson_data_bgs_csv;
 let geojson_layer;
 
 // misc
@@ -44,8 +44,9 @@ let geojson_data = [
 	{
 		text: 'Census Block Groups',
 		id: 'bg',
-		path: 'data/la_bg.geojson',
+		path: 'data/boundaries/bg_topo.json',
 		csv: 'data/acs_vars_results_blockgroups.csv',
+		google: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQBdJuAIqA2SBcJ-uf38wM0Ce7POFWVTFx6VnjjeC_5yLfw3HDBHDr7uOr0mAnEF1piO2DRDhuDCl2U/pub?gid=1680290540&single=true&output=csv'
 	},
 	{
 		text: 'Census Tracts',
@@ -170,7 +171,8 @@ let loIcon = L.icon({
 
 
 let geoid_list_tracts = [];
-let geoid_list_bgs = [];
+let geoid_list_block_codes = [];
+let geoid_list_agencies = [];
 let geojson_highlighted_layer;
 let highlighted = L.featureGroup();
 
@@ -198,26 +200,119 @@ $( document ).ready(function() {
 ***************************** */ 
  function getData()
 {
+
+	function parseCsv(url, stepArr){
+		return new Promise(function(resolve, reject){
+			Papa.parse(url, {
+				download:true,
+				header:true,
+				complete: resolve       
+			});        
+		});
+	}
+
+	function getGeoJson(url){
+		return new Promise(function(resolve,reject){
+			$.getJSON(url,resolve)
+		})
+	}
+
+	const csvdata = parseCsv(geojson_data[0].csv)
+	const googledata = parseCsv(geojson_data[0].google)
+	const geojsondata = getGeoJson(geojson_data[0].path)
+
+	Promise.all(
+		[geojsondata,csvdata,googledata]
+	).then(
+		function(results){
+			console.log(results)
+			geojson_data_bgs = results[0]
+			geojson_data_bgs_csv = results[1]
+			geojson_data_bgs_google = results[2]
+
+			createMap();
+			
+			geojson_layer = L.topoJson(geojson_data_bgs,{				
+				stroke: true,
+				color: 'white',
+				weight: 0.8,
+				fill: true,
+				fillOpacity: fillOpacity,
+				opacity: fillOpacity,
+				onEachFeature: onEachFeature,
+			}
+			).addTo(map)
+
+			joinCSV()
+			createGeoidList()
+			createSidebar();
+	
+			// create a geojson for highlighting
+			geojson_highlighted_layer = L.topoJson(geojson_data_bgs,{pane:'boundaries'})
+	
+		}
+	)
+
+
+
+	// Promise.all(//pass array of promises to Promise.all
+	// 	urls//you have an array of urls
+	// 	.map(//map urls to promises created with parse
+	// 		console.log(url)
+	// 		url=> 
+	// 		new Promise(//create one promise
+	// 			(resolve,reject)=>
+	// 			Papa.parse(
+	// 				url,
+	// 				{
+	// 					download: true,
+	// 					complete:resolve,//resolve the promise when complete
+	// 					error:reject//reject the promise if there is an error
+	// 				}
+	// 			)
+	// 		)
+	// 	)
+	// )
+	// .then(
+	// function (results) {
+	// 		console.log(results[0]) // log result from file 1
+	// 		console.log(results[1]) // log result from file 2
+	// 	}
+	// )
+	// .catch(//log the error
+	// 	err=>console.warn("Something went wrong:",err)
+	// )
+
+
+
+/*
 	$.when(
-		/*
-			Data json files:
-			New datasets need to added as json files. Note that the json file is
-			preceded with defining the json as a javascript object.
-		*/
-		$.getJSON(geojson_path_tracts,function(data){
-			console.log('tracts:')
+
+		$.getJSON(geojson_data[0].path,function(data){
+			console.log('topojson:')
 			console.log(data)
-	
-			// put the data in a global variable
-			geojson_data_tracts = data;
-		}),
-	
-		$.getJSON(geojson_path_bgs,function(data){
-			console.log('bgs:')
-			console.log(data)
-	
-			// put the data in a global variable
 			geojson_data_bgs = data;
+		}),
+
+		Papa.parse(geojson_data[0].google, {
+			header: true,
+			download: true,
+			complete: function(csvdata) {
+				console.log('google');
+				console.log(csvdata);
+				geojson_data_bgs_google = csvdata
+			}
+		}),
+
+		Papa.parse(geojson_data[0].csv, {
+			download: true,
+			header: true,
+			complete: function(csvdata) {
+				console.log('csv')
+				console.log(csvdata)
+				geojson_data_bgs_csv = csvdata
+
+			}
 		})
 	
 
@@ -227,11 +322,8 @@ $( document ).ready(function() {
 		createGeoidList()
 		createSidebar();
 		createMap();
-		joinCSV()
 
-
-
-		geojson_layer = L.geoJson(geojson_data_bgs, {				
+		geojson_layer = L.topoJson(geojson_data_bgs,{				
 			stroke: true,
 			color: 'white',
 			weight: 0.8,
@@ -239,15 +331,16 @@ $( document ).ready(function() {
 			fillOpacity: fillOpacity,
 			opacity: fillOpacity,
 			onEachFeature: onEachFeature,
-			
-		}).addTo(map)
-		
-
+		}
+		).addTo(map)
+		joinCSV()
 
 		// create a geojson for highlighting
-		geojson_highlighted_layer = L.geoJson(geojson_data_bgs,{pane:'boundaries'})
+		geojson_highlighted_layer = L.topoJson(geojson_data_bgs,{pane:'boundaries'})
 
 	});
+
+	*/
 }
 
 
@@ -315,15 +408,6 @@ function mapGeoJSON(args){
 	num_classes = args.num_classes || num_classes;
 	palette = args.palette || getRandomPalette();
 	scheme = args.scheme || scheme;
-
-	/*
-	
-		clear layers
-	
-	*/ 
-	if (geojson_layer){
-		geojson_layer.clearLayers()
-	}
 	
 	/*
 	
@@ -333,26 +417,42 @@ function mapGeoJSON(args){
 	let values = [];
 
 	// based on the provided field, enter each value into the array
-	geojson_data_bgs.features.forEach(function(item,index){
+	geojson_layer.getLayers().forEach(function(item,index){
+		// console.log(item.feature.properties[field])
 		//only add if it's a number
-		if(!isNaN(item.properties[field])){
-			values.push(parseFloat(item.properties[field]))
+		if(!isNaN(item.feature.properties[field])){
+			values.push(parseFloat(item.feature.properties[field]))
 		}
 	})
+	// geojson_data_bgs.features.forEach(function(item,index){x
+	// 	//only add if it's a number
+	// 	if(!isNaN(item.properties[field])){
+	// 		values.push(parseFloat(item.properties[field]))
+	// 	}
+	// })
 
-	console.log(values)
 
 	brew.setSeries(values);
 	brew.setNumClasses(num_classes);
 	brew.setColorCode(palette);
 	brew.classify(scheme);
 
+	
+	/*
+	
+		clear layers
+	
+	*/ 
+	if (geojson_layer){
+		geojson_layer.clearLayers()
+	}
+
 	/*
 	
 		map it
 	
 	*/ 
-	geojson_layer = L.geoJson(geojson_data_bgs, {
+	geojson_layer = L.topoJson(geojson_data_bgs, {
 		style: getStyle, //call a function to style each feature
 		onEachFeature: onEachFeature,
 	}).addTo(map);
@@ -366,7 +466,6 @@ function mapGeoJSON(args){
 		max: 100,
 		from: 50,
 		onChange: function(data){
-			console.log(data.from)
 			fillOpacity = data.from/100
 			geojson_layer.setStyle({opacity:fillOpacity,fillOpacity:fillOpacity})
 		}
@@ -388,13 +487,28 @@ function createSidebar(){
 
 	/*
 	
+		search by agency
+	
+	*/ 
+	$('.sidebar').append(`<div class="dropdown" id="dropdown-agency"></div>`)
+	$('#dropdown-agency').selectivity({
+		allowClear: true,
+		items: geoid_list_agencies,
+		placeholder: 'Search by Agency',
+		showSearchInputInDropdown: true
+	}).on("change",function(data){
+		zoomToAgency(data.value)
+	});
+
+	/*
+	
 		search by block code
 	
 	*/ 
 	$('.sidebar').append(`<div class="dropdown" id="dropdown-blocks"></div>`)
 	$('#dropdown-blocks').selectivity({
 		allowClear: true,
-		items: geoid_list_bgs,
+		items: geoid_list_block_codes,
 		placeholder: 'Search by block code',
 		showSearchInputInDropdown: true
 	}).on("change",function(data){
@@ -592,6 +706,7 @@ function resetHighlight(e) {
 
 // on mouse click on a feature, zoom in to it
 function zoomToFeature(e) {
+	console.log(e)
 	map.fitBounds(e.target.getBounds());
 }
 
@@ -605,24 +720,32 @@ function createChart(properties){
 	// for now, total pop is different
 	if(geojson_scale === 'bg'){
 		total_pop = properties.Pop_total
-		additional_html = `
-		<span style="font-size:2em;color:#666">Block code: ${properties.block_code}</span><br>
-		<span style="font-size:0.6;color:#666">${properties.Agency_1}</span>
-		`
+		if(properties.Block_Code != '')
+		{
+			additional_html = `
+			<span style="font-size:2em;color:#666">Block code: ${properties.Block_Code}</span><br>
+			<span style="font-size:0.6;color:#666">${properties.Current_Agency}</span>
+			`
+		}
+		else
+		{
+			additional_html = ''
+		}
 	}
 	else{
 		total_pop = properties.total_pop
 	}
 	// empty dashboard
-	$('.dashboard').html(`
+	$('#charts').html(`
 	<div style="text-align:center">
-		<h4>${properties.CSA_Name}</h4>
-		${additional_html}
-		<h4>Community Profile</h4>
+		<h4>Community Profile<br>${additional_html}</h4>
 		<div style="font-size:4em;">${total_pop}</div>
 		<p>persons</p>
 	</div>
-	<table width="100%"><tr><td width="33%" id="dash1"></td><td width="33%" id="dash2"></td><td width="33%" id="dash3"></td></tr></table>
+	<table width="100%">
+	<tr><td width="50%" id="dash1"></td><td width="50%" id="dash2"></td></tr>
+	<tr><td width="50%" id="dash3"></td><td width="50%" id="dash4"></td></tr>
+	</table>
 	`);
 
 	/*
@@ -800,7 +923,7 @@ function createChart(properties){
 	wafflevalues.title = 'Race';
 	wafflevalues.data = series
 	wafflevalues.labels = labels
-	$('.dashboard').append('<div class="col-sm" style="text-align:center">'+createWaffleChart(wafflevalues)+'</div>');
+	$('#dash4').append('<div class="col-sm" style="text-align:center">'+createWaffleChart(wafflevalues)+'</div>');
 
 
 	// var options = {
@@ -959,17 +1082,13 @@ function createChart(properties){
 
 
 function joinCSV(){
-	Papa.parse(getDataPath(), {
-	download: true,
-	header: true,
-	complete: function(results) {
+	geojson_layer.eachLayer(function(layer) {
+		featureJoinByProperty(layer.feature.properties, geojson_data_bgs_csv.data, "GEOID");
+	});
+	geojson_layer.eachLayer(function(layer) {
+		featureJoinByProperty(layer.feature.properties, geojson_data_bgs_google.data, "GEOID");
+	});
 
-		geojson_layer.eachLayer(function(layer) {
-		  featureJoinByProperty(layer.feature.properties, results.data, "GEOID");
-		});
-
-	  }
-  });
 }
 
 function getDataPath(){
@@ -992,34 +1111,109 @@ function zoomToFIPS(fips){
 	// style to use on mouse over
 	highlighted.setStyle({
 		weight: 4,
-		color: 'red',
+		color: '#6A3D9A',
 		pane: 'boundaries',
 		fill: false
 	});
 	highlighted.bringToFront();
 	highlighted.addTo(map)
 
-	// create chart
-
+	/*
+	
+		create chart
+	
+	*/ 
 	// find the data for this fips
-	properties = geojson_data_bgs.features.filter(item => item.properties.GEOID === fips)[0].properties
-	console.log(fips)
-	console.log(properties)
+	properties = geojson_layer.getLayers().filter(item => item.feature.properties.GEOID === fips)[0].feature.properties
+
 	createChart(properties)
 	
 }
+
+function zoomToAgency(agency){
+
+	if(highlighted){
+		highlighted.clearLayers()
+	}
+
+	// get list of fips for this agency
+	highlight_agency_bgs=geojson_highlighted_layer.getLayers().filter(item => item.feature.properties.Current_Agency === agency)
+
+	highlight_agency_bgs.forEach(function(item){
+		highlighted.addLayer(item)
+	})
+	// highlighted.addLayer(highlight)
+	map.fitBounds(highlighted.getBounds())
+
+	// style to use on mouse over
+	highlighted.setStyle({
+		weight: 2,
+		color: '#6A3D9A',
+		pane: 'boundaries',
+		fill: false
+	});
+	highlighted.bringToFront();
+	highlighted.addTo(map)
+
+	/*
+	
+		create chart
+	
+	*/ 
+	// find the data for this fips
+	// properties = geojson_layer.getLayers().filter(item => item.feature.properties.GEOID === fips)[0].feature.properties
+
+	// createChart(properties)
+	
+}
+
 function createGeoidList(){
-	geojson_data_tracts.features.forEach(function(item){
-		geoid_list_tracts.push(item.properties.GEOID)
-	});
-	geojson_data_bgs.features.forEach(function(item){
-		object = {
-			id: item.properties.GEOID,
-			text: `${item.properties.block_code} (${item.properties.CSA_Name})`
+	geojson_layer.eachLayer(function(item){
+		if(item.feature.properties.Block_Code != '')
+		{
+			block_code_object = {
+				id: item.feature.properties.GEOID,
+				text: `${item.feature.properties.Block_Code} (${item.feature.properties.Current_Agency})`,
+				block_code: item.feature.properties.Block_Code
+			}
+			geoid_list_block_codes.push(block_code_object)
+			geoid_list_agencies.push(item.feature.properties.Current_Agency)
 		}
-		geoid_list_bgs.push(object)
-		// geoid_list_bgs.push(item.properties.block_code)
-	});
+	})
+
+	// get rid of empty values
+	geoid_list_agencies = geoid_list_agencies.filter(item => item);
+	geoid_list_block_codes = geoid_list_block_codes.filter(item => item);
+
+	// get rid of duplicates
+	geoid_list_agencies = [...new Set(geoid_list_agencies)];
+
+	// sort it
+	geoid_list_agencies.sort();
+	geoid_list_block_codes.sort(function(a,b){
+		return a.block_code - b.block_code;
+	})
+
+	// geojson_data_tracts.features.forEach(function(item){
+	// 	geoid_list_tracts.push(item.properties.GEOID)
+// geojson_data_bgs.objects.bg.geometries.forEach(function(item){
+	// 	object = {
+	// 		id: item.properties.GEOID,
+	// 		// text: item.properties.GEOID,
+	// 		text: `${item.properties.Block_Code} (${item.properties.CSA_Name})`
+	// 	}
+	// 	geoid_list_block_codes.push(object)
+	// });
+	
+	// if geojson
+	// geojson_data_bgs.features.forEach(function(item){
+	// 	object = {
+	// 		id: item.properties.GEOID,
+	// 		text: `${item.properties.Block_Code} (${item.properties.CSA_Name})`
+	// 	}
+	// 	geoid_list_block_codes.push(object)
+	// });
+
 }
 
 function mapHiLo(){
@@ -1140,4 +1334,23 @@ function createWaffleChart(values)
 	waffle += '</table></div>'
 
 	return waffle;
+}
+
+hideDashboard = true;
+
+function toggleDashboard(){
+	if(hideDashboard){
+		
+		$('#charts').hide()
+		$('body').css('grid-template-columns','300px 1fr 1px')
+		map.invalidateSize()
+		hideDashboard = false;
+	}
+	else
+	{
+		$('#charts').show()
+		$('body').css('grid-template-columns','300px 1fr 300px')
+		map.invalidateSize()
+		hideDashboard = true;
+	}
 }

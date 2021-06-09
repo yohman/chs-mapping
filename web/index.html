@@ -24,36 +24,79 @@
 	<!-- papa parse for csv's -->
 	<script src="js/papaparse.min.js"></script>
 
-    <!-- ... -->
+    <!-- Selectivity dropdown -->
     <link href="css/font-awesome.css" rel="stylesheet" />
     <link href="css/selectivity.css" rel="stylesheet" />
-    <!-- ... -->
     <script src="js/selectivity-jquery.min.js"></script>
     <script src="js/selectivity.js"></script>
-    <!-- <script src="js/all.js"></script> -->
-    <!-- ... -->
+
+	<!-- Apex Charts -->
 	<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
-
-	<!--Plugin CSS file with desired skin-->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/css/ion.rangeSlider.min.css"/>
-        
-    <!--Plugin JavaScript file-->
+	<!-- slider -->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/css/ion.rangeSlider.min.css"/>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/js/ion.rangeSlider.min.js"></script>
 
+	<!-- topjson support -->
+	<!-- <script src="http://d3js.org/topojson.v1.min.js"></script>   -->
+	<script src="https://unpkg.com/topojson@3.0.2/dist/topojson.min.js"></script>
+	<script>
+	// L.TopoJSON = L.GeoJSON.extend({  
+	// 	addData: function(jsonData) {    
+	// 		if (jsonData.type === "Topology") {
+	// 			for (key in jsonData.objects) {
+	// 				geojson = topojson.feature(jsonData, jsonData.objects[key]);
+	// 				L.GeoJSON.prototype.addData.call(this, geojson);
+	// 			}
+	// 		}    
+	// 		else {
+	// 			L.GeoJSON.prototype.addData.call(this, jsonData);
+	// 		}
+	// 	}  
+	// });
+	// // Copyright (c) 2013 Ryan Clark
 
+
+		//extend Leaflet to create a GeoJSON layer from a TopoJSON file
+		L.TopoJSON = L.GeoJSON.extend({
+			addData: function (data) {
+			var geojson, key;
+			if (data.type === "Topology") {
+				for (key in data.objects) {
+				if (data.objects.hasOwnProperty(key)) {
+					geojson = topojson.feature(data, data.objects[key]);
+					L.GeoJSON.prototype.addData.call(this, geojson);
+				}
+				}
+				return this;
+			}
+			L.GeoJSON.prototype.addData.call(this, data);
+			return this;
+			}
+		});
+		L.topoJson = function (data, options) {
+			return new L.TopoJSON(data, options);
+		};
+
+
+
+
+	</script>
 </head>
 <body>
 
 	<div class="header">
-		Community Health Worker Outreach Initiative
+		Community Health Worker Outreach Initiative 
 	</div>
 	<div class="sidebar"></div>
 	<div class="legend"></div>
 	<div class="content">
 		<div id="map"></div>
 	</div>
-	<div class="dashboard"></div>
+	<div class="dashboard">
+		<div id="toggler" onclick="toggleDashboard()"><i class="fa fa-arrows-h" aria-hidden="true"></i></div>
+		<div id="charts"></div>
+	</div>
 	<!-- <div id="undermap" class="undermap"></div> -->
 	<!-- <div id="abovemap" class="abovemap"></div> -->
 	<div class="footer">
