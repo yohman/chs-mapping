@@ -7,9 +7,11 @@ body,html {
 
 #map {
 	height: 100%;
+	text-align: center;
 }
 
 h4 {
+	font-size: 0.8em;
 	padding: 5px;
 	margin: 5px;
 	border-radius: 5px;
@@ -18,26 +20,32 @@ h4 {
 
 body {
 	display: grid;
-	grid-template-rows: 60px 214px 1fr 40px;
+	grid-template-rows: 60px 214px 1fr;
 	grid-template-columns: 300px 1fr 300px;
 	grid-template-areas: 
 	"header header header"
 	"sidebar content dashboard"
 	"legend content dashboard"
-	"footer footer footer";
+	/* "footer footer footer"; */
 }
 
 .header {
 	grid-area: header;
 	padding:10px;
-	background-color: #333;
-	color: white;
+	background-color:gainsboro;
+	color: #222;
 	font-size: 2em;
 }
 
 .legend {
-	background-color: gainsboro;
+	/* background-color: gainsboro; */
 	grid-area: legend;
+}
+.legend-inner {
+	font-size: 0.8em;
+	padding: 12px;
+	/* background-color: gainsboro; */
+	/* grid-area: legend; */
 }
 
 .nav {
@@ -130,7 +138,7 @@ body {
 	padding: 5px;
 	background-color: #666;
 	color: #ccc;
-	font-size: 0.8em;
+	font-size: 0.7em;
 	margin: 1px;
 	cursor: pointer;
 }
@@ -214,4 +222,23 @@ hr {
     padding: 8px 8px;
     border-top-left-radius: 5px;
     border-bottom-left-radius: 5px;
+}
+
+.info {
+	padding: 6px 8px;
+	font-size: 1em;
+	background: white;
+	background: rgba(255,255,255,0.8);
+	box-shadow: 0 0 15px rgba(0,0,0,0.2);
+	border-radius: 5px;
+	/* min-width: 250px;
+	min-height: 50px; */
+}
+.info h4 {
+	margin: 0 0 5px;
+	color: #777;
+}
+
+.tooltip {
+	font-size: 0.7em;
 }

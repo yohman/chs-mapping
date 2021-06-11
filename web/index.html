@@ -15,20 +15,27 @@
 	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 	<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 
+	<!-- leaflet geocoder -->
+	<link rel="stylesheet" href="https://unpkg.com/leaflet-geosearch@3.0.0/dist/geosearch.css" />
+	<script src="https://unpkg.com/leaflet-geosearch@3.0.0/dist/geosearch.umd.js"></script>
+
+	<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+	<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
 	<!-- jquery -->
 	<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
 
    	<!-- classy brew -->
-	<script src="js/classybrew.js"></script>
+	<script src="js/external/classybrew.js"></script>
 
 	<!-- papa parse for csv's -->
-	<script src="js/papaparse.min.js"></script>
+	<script src="js/external/papaparse.min.js"></script>
 
     <!-- Selectivity dropdown -->
     <link href="css/font-awesome.css" rel="stylesheet" />
     <link href="css/selectivity.css" rel="stylesheet" />
-    <script src="js/selectivity-jquery.min.js"></script>
-    <script src="js/selectivity.js"></script>
+    <script src="js/external/selectivity-jquery.min.js"></script>
+    <script src="js/external/selectivity.js"></script>
 
 	<!-- Apex Charts -->
 	<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
@@ -41,22 +48,6 @@
 	<!-- <script src="http://d3js.org/topojson.v1.min.js"></script>   -->
 	<script src="https://unpkg.com/topojson@3.0.2/dist/topojson.min.js"></script>
 	<script>
-	// L.TopoJSON = L.GeoJSON.extend({  
-	// 	addData: function(jsonData) {    
-	// 		if (jsonData.type === "Topology") {
-	// 			for (key in jsonData.objects) {
-	// 				geojson = topojson.feature(jsonData, jsonData.objects[key]);
-	// 				L.GeoJSON.prototype.addData.call(this, geojson);
-	// 			}
-	// 		}    
-	// 		else {
-	// 			L.GeoJSON.prototype.addData.call(this, jsonData);
-	// 		}
-	// 	}  
-	// });
-	// // Copyright (c) 2013 Ryan Clark
-
-
 		//extend Leaflet to create a GeoJSON layer from a TopoJSON file
 		L.TopoJSON = L.GeoJSON.extend({
 			addData: function (data) {
@@ -77,10 +68,6 @@
 		L.topoJson = function (data, options) {
 			return new L.TopoJSON(data, options);
 		};
-
-
-
-
 	</script>
 </head>
 <body>
@@ -91,19 +78,23 @@
 	<div class="sidebar"></div>
 	<div class="legend"></div>
 	<div class="content">
-		<div id="map"></div>
+		<div id="map"><br><br><br><br><i class="fa fa-location-arrow fa-spin" aria-hidden="true"></i><br>...loading map...</div>
 	</div>
 	<div class="dashboard">
-		<div id="toggler" onclick="toggleDashboard()"><i class="fa fa-arrows-h" aria-hidden="true"></i></div>
+		<div id="toggler" onclick="toggleDashboard()" style="display: none;cursor:pointer"><i class="fa fa-arrows-h" aria-hidden="true"></i></div>
 		<div id="charts"></div>
 	</div>
 	<!-- <div id="undermap" class="undermap"></div> -->
 	<!-- <div id="abovemap" class="abovemap"></div> -->
-	<div class="footer">
+	<!-- <div class="footer">
 		© UCLA Center for Neighborhood Knowledge
-	</div>
+	</div> -->
 
+	<!-- project javascript -->
+	<script src="js/globals.js"></script>
 	<script src="js/map.js"></script>
+	<script src="js/panels.js"></script>
+	<script src="js/actions.js"></script>
 
 </body>
 </html>
