@@ -422,7 +422,7 @@ function addBoundaryLayer(id_text){
 				weight: 1.5,
 				pane:'boundaries',
 				onEachFeature: function(feature,layer){
-					layer.bindTooltip(feature.properties.name,{
+					layer.bindTooltip(feature.properties[layer2add.name_field],{
 						permanent:true,
 						opacity:0.8,
 						className: 'tooltip'
