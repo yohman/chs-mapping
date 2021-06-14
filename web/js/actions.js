@@ -41,7 +41,7 @@ function highlightFeature(e) {
 
 ***************************** */ 
 function resetHighlight(e) {
-	chs.mapOptions.baselayer.resetStyle(e.target);
+	chs.mapLayers.baselayer.resetStyle(e.target);
 }
 
 
@@ -114,7 +114,7 @@ function zoomToFIPS(fips){
 	
 	*/ 
 	// find the data for this fips
-	properties = chs.mapOptions.baselayer.getLayers().filter(item => item.feature.properties.GEOID === fips)[0].feature.properties
+	properties = chs.mapLayers.baselayer.getLayers().filter(item => item.feature.properties.GEOID === fips)[0].feature.properties
 
 	createChart(properties)
 	
@@ -151,7 +151,7 @@ function zoomToAgency(agency){
 	
 	*/ 
 	// find the data for this fips
-	// properties = chs.mapOptions.baselayer.getLayers().filter(item => item.feature.properties.GEOID === fips)[0].feature.properties
+	// properties = chs.mapLayers.baselayer.getLayers().filter(item => item.feature.properties.GEOID === fips)[0].feature.properties
 
 	// createChart(properties)
 	

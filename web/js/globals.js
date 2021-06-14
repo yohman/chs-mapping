@@ -26,22 +26,27 @@ chs.mapOptions = {
 	fillOpacity:    0.5,
 	num_classes:    5,
 	field:          'total_pop',
+	category_field:	'',
+	category_array:	[],
 	scheme:         'quantiles',
 	brew: 	 		new classyBrew(),
 	choroplethColors: '',
-	baselayer:		'',
+	max_geos:		'', //filtered layer of polygons with max values
+	max_geos_toggle: true,
 	bounds: 		[
-						[34.840471137173814,-117.64558196067811],
-						[33.65310164305273,-118.95295500755311]
-					],
+		[34.840471137173814,-117.64558196067811],
+		[33.65310164305273,-118.95295500755311]
+	],
+
 }
 
 /*
 
-	layers
+layers
 
 */ 
 chs.mapLayers = {
+	baselayer:		'',
 	boundary: '',
 	hilo_markers: L.featureGroup(),
 	highlighted: L.featureGroup(),
@@ -126,56 +131,80 @@ chs.data = {
 		// 	path: 'data/la_bg.geojson'
 		// },
 	],
-	variables: [
+	categorical_variables: [
 		{
+			geography: 'bg',
+			text: 'Agency',
+			id: 'Current_Agency',
+			type: 'categorical'
+		},
+		{
+			geography: 'bg',
+			text: 'Priority Decile',
+			id: 'Priority_Decile',
+			type: 'categorical'
+		},
+	],
+	variables: [
+			{
 			geography: 'bg',
 			text: 'Total Population',
 			id: 'Pop_total',
+			type: 'choropleth'
 		},
 		{
 			geography: 'bg',
 			text: 'Percent Limited English',
 			id: 'Limited_Eng_per',
+			type: 'choropleth'
 		},
 		{
 			geography: 'bg',
 			text: 'Percent Uninsured',
 			id: 'Uninsured_per',
+			type: 'choropleth'
 		},
 		{
 			geography: 'bg',
 			text: 'Below 100 percent of the poverty level',
 			id: 'Poverty_per',
+			type: 'choropleth'
 		},
 		{
 			geography: 'bg',
 			text: 'Percent Hispanic or Latino',
 			id: 'Hisp_per',
+			type: 'choropleth'
 		},
 		{
 			geography: 'bg',
 			text: 'Percent Non Hispanic Asian',
 			id: 'NonHisp_asian_per',
+			type: 'choropleth'
 		},
 		{
 			geography: 'bg',
 			text: 'Percent Non Hispanic Black',
 			id: 'NonHisp_black_per',
+			type: 'choropleth'
 		},
 		{
 			geography: 'bg',
 			text: 'Percent Non Hispanic White',
 			id: 'NonHisp_white_per',
+			type: 'choropleth'
 		},
 		{
 			geography: 'bg',
 			text: 'Percent Non Hispanic Native Hawaiian and Other PI',
 			id: 'NonHisp_pi_per',
+			type: 'choropleth'
 		},
 		{
 			geography: 'bg',
 			text: 'Percent Non Hispanic American Indian and Alaska Native',
 			id: 'NonHisp_ai_per',
+			type: 'choropleth'
 		},
 	],
 }

@@ -79,16 +79,7 @@ $( document ).ready(function() {
 			*/ 
 			createMap();
 			
-			chs.mapOptions.baselayer = L.topoJson(chs.data.bgs,{				
-					stroke: true,
-					color: 'white',
-					weight: 0.8,
-					fill: true,
-					fillOpacity: chs.mapOptions.fillOpacity,
-					opacity: chs.mapOptions.fillOpacity,
-					onEachFeature: onEachFeature,
-				}
-			).addTo(chs.map)
+			addDefaultBaseLayer();
 
 			// create a geojson for highlighting
 			chs.mapLayers.highlighted_layer = L.topoJson(chs.data.bgs,{pane:'boundaries'})
@@ -113,6 +104,18 @@ $( document ).ready(function() {
 	)
 }
 
+function addDefaultBaseLayer(){
+	chs.mapLayers.baselayer = L.topoJson(chs.data.bgs,{				
+			stroke: true,
+			color: 'white',
+			weight: 0.8,
+			fill: true,
+			fillOpacity: chs.mapOptions.fillOpacity,
+			opacity: chs.mapOptions.fillOpacity,
+			onEachFeature: onEachFeature,
+		}
+	).addTo(chs.map)
+}
 
 /* **************************** 
 
@@ -212,74 +215,186 @@ function createMap(){
 	Map themes (choropleths)
 
 ***************************** */ 
-function mapGeoJSON(args){
+function createChoropleth(args){
 
-	/*
+	console.log(args)
 	
-		defaults
-	
-	*/ 
-	args = args || {};
-	chs.mapOptions.field = args.field || chs.mapOptions.field;
-	chs.mapOptions.num_classes = args.num_classes || chs.mapOptions.num_classes;
-	chs.mapOptions.choroplethColors = args.palette || getRandomPalette();
-	chs.mapOptions.scheme = args.scheme || chs.mapOptions.scheme;
-	
-	/*
-	
-		brew it
-	
-	*/ 
-	let values = [];
 
-	// based on the provided field, enter each value into the array
-	chs.mapOptions.baselayer.getLayers().forEach(function(item,index){
-		// console.log(item.feature.properties[field])
-		//only add if it's a number
-		if(!isNaN(item.feature.properties[chs.mapOptions.field])){
-			values.push(parseFloat(item.feature.properties[chs.mapOptions.field]))
+	if(args.field === null)
+	{
+		if (chs.mapLayers.baselayer){
+			// clear the layer
+			chs.mapLayers.baselayer.clearLayers()
 		}
-	})
-	// chs.data.bgs.features.forEach(function(item,index){x
-	// 	//only add if it's a number
-	// 	if(!isNaN(item.properties[field])){
-	// 		values.push(parseFloat(item.properties[field]))
-	// 	}
-	// })
-
-
-	chs.mapOptions.brew.setSeries(values);
-	chs.mapOptions.brew.setNumClasses(chs.mapOptions.num_classes);
-	chs.mapOptions.brew.setColorCode(chs.mapOptions.choroplethColors);
-	chs.mapOptions.brew.classify(chs.mapOptions.scheme);
-
-	
-	/*
-	
+		$('.legend').empty()
+		addDefaultBaseLayer()
+	}
+	else
+	{
+		/*
+		
+		defaults
+		
+		*/ 
+		args = args || {};
+		chs.mapOptions.field = args.field || chs.mapOptions.field;
+		chs.mapOptions.num_classes = args.num_classes || chs.mapOptions.num_classes;
+		chs.mapOptions.choroplethColors = args.palette || getRandomPalette();
+		chs.mapOptions.scheme = args.scheme || chs.mapOptions.scheme;
+		
+		/*
+		
+		brew it
+		
+		*/ 
+		let values = [];
+		
+		// based on the provided field, enter each value into the array
+		chs.mapLayers.baselayer.getLayers().forEach(function(item,index){
+			// console.log(item.feature.properties[field])
+			//only add if it's a number
+			if(!isNaN(item.feature.properties[chs.mapOptions.field])){
+				values.push(parseFloat(item.feature.properties[chs.mapOptions.field]))
+			}
+		})
+		
+		chs.mapOptions.brew.setSeries(values);
+		chs.mapOptions.brew.setNumClasses(chs.mapOptions.num_classes);
+		chs.mapOptions.brew.setColorCode(chs.mapOptions.choroplethColors);
+		chs.mapOptions.brew.classify(chs.mapOptions.scheme);
+		
+		
+		/*
+		
 		clear layers
-	
-	*/ 
-	if (chs.mapOptions.baselayer){
-		chs.mapOptions.baselayer.clearLayers()
+		
+		*/ 
+		if (chs.mapLayers.baselayer){
+			// clear the tooltips first
+			if(chs.mapOptions.max_geos){
+				chs.mapOptions.max_geos.forEach(function(layer){
+					layer.unbindTooltip();
+				})
+			}
+			
+			chs.mapLayers.baselayer.clearLayers()
+		}
+
+		/*
+		
+			map it
+		
+		*/ 
+		chs.mapLayers.baselayer = L.topoJson(chs.data.bgs, {
+			style: getStyle, //call a function to style each feature
+			onEachFeature: onEachFeature,
+		}).addTo(chs.map);
+
+		// create the legend
+		createLegend();
+
+		// add markers for hi/lo values
+		mapHiLo();
 	}
 
-	/*
-	
-		map it
-	
-	*/ 
-	chs.mapOptions.baselayer = L.topoJson(chs.data.bgs, {
-		style: getStyle, //call a function to style each feature
-		onEachFeature: onEachFeature,
-	}).addTo(chs.map);
-
-	// create the legend
-	createLegend();
-
-	// add markers for hi/lo values
-	mapHiLo();
 }
+
+/* **************************** 
+
+	Create categorical map
+
+***************************** */ 
+// let cat_colors = ['#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99','#e31a1c','#fdbf6f','#ff7f00','#cab2d6','#6a3d9a','#ffff99','#b15928']
+let cat_colors = d3.scale.category20().range()
+
+function createCategoricalMap(field){
+
+	// empty themes
+	// $('#dropdown-layers').selectivity('clear')
 	
+	if(field === null){
+		if (chs.mapLayers.baselayer){
+			chs.mapLayers.baselayer.clearLayers()
+		}
+		$('.legend').empty()
+		addDefaultBaseLayer()
+
+	}
+	else
+	{
+		chs.mapOptions.category_field = field;
+
+		/*
+		
+			clear array
+		
+		*/ 
+		chs.mapOptions.category_array = [];
+	
+		/*
+		
+			get categories
+		
+		*/ 
+		chs.data.data.forEach(function(item){
+			chs.mapOptions.category_array.push(item[chs.mapOptions.category_field])
+		})
+	
+		/*
+		
+			clean up
+		
+		*/ 
+		// get rid of duplicates
+		chs.mapOptions.category_array = [...new Set(chs.mapOptions.category_array)]
+	
+		// get rid of empty values
+		if(chs.mapOptions.category_array[0]!=undefined){
+			chs.mapOptions.category_array = chs.mapOptions.category_array.filter((entry) => { return entry.trim() != '' })
+		}
+	
+		// sort it
+		chs.mapOptions.category_array.sort();
+	
+		/*
+		
+			clear layers
+		
+		*/ 
+		if (chs.mapLayers.baselayer){
+			chs.mapLayers.baselayer.clearLayers()
+		}
+	
+		chs.mapLayers.baselayer = L.topoJson(chs.data.bgs, {
+			style:  getCategoryStyle,
+			onEachFeature: onEachFeature,
+		}).addTo(chs.map);
+	
+		createCategoricalLegend();
+	
+	}
+	console.log(field)
+
+}
+
+function getCategoryStyle(feature){
+	// console.log(feature)
+	let index = chs.mapOptions.category_array.indexOf(feature.properties[chs.mapOptions.category_field])
+	// let cat = parseInt(feature.properties.Priority_Decile)
+	return {
+		stroke: true,
+		color: 'white',
+		weight: 0.8,
+		fill: true,
+		fillColor: cat_colors[index],
+		fillOpacity: chs.mapOptions.fillOpacity,
+		opacity: chs.mapOptions.fillOpacity,
+	}
+
+
+
+}
+
 /* **************************** 
 
 	Boundary layers
@@ -354,13 +469,16 @@ function getColor(d) {
 
 
 function joinCSV(){
-	chs.mapOptions.baselayer.eachLayer(function(layer) {
+	chs.mapLayers.baselayer.eachLayer(function(layer) {
 		featureJoinByProperty(layer.feature.properties, chs.data.csv.data, "GEOID");
 	});
-	chs.mapOptions.baselayer.eachLayer(function(layer) {
+	chs.mapLayers.baselayer.eachLayer(function(layer) {
 		featureJoinByProperty(layer.feature.properties, chs.data.google.data, "GEOID");
 	});
-
+	chs.data.data = []
+	chs.mapLayers.baselayer.eachLayer(function(layer) {
+		chs.data.data.push(layer.feature.properties)
+	});
 }
 
 // function getDataPath(){
@@ -370,7 +488,7 @@ function joinCSV(){
 
 
 function createGeoidList(){
-	chs.mapOptions.baselayer.eachLayer(function(item){
+	chs.mapLayers.baselayer.eachLayer(function(item){
 		if(item.feature.properties.Block_Code != '')
 		{
 			block_code_object = {
@@ -418,21 +536,17 @@ function createGeoidList(){
 
 }
 
+
 function mapHiLo(){
-	chs.mapLayers.hilo_markers.clearLayers();
+	
+	// deleteMaxGeos()
+	chs.mapOptions.max_geos_toggle = true;
 	let max_value = Math.max(...chs.mapOptions.brew.getSeries())
 	let min_value = Math.min(...chs.mapOptions.brew.getSeries())
 
-	let max_geos = chs.mapOptions.baselayer.getLayers().filter(item => parseFloat(item.feature.properties[chs.mapOptions.field]) === max_value)
-	// max_geos.forEach(function(item){
-	// 	let marker = L.marker(item.getCenter(),{icon:chs.mapLayers.hiIcon}).bindPopup(`${Math.round(max_value)} %`).on('mouseover',function(){
-	// 		this.openPopup()
-	// 	})
-	// 	chs.mapLayers.hilo_markers.addLayer(marker)
-	// })
+	chs.mapOptions.max_geos = chs.mapLayers.baselayer.getLayers().filter(item => parseFloat(item.feature.properties[chs.mapOptions.field]) === max_value)
 
-
-	max_geos.forEach(function(feature,layer){
+	chs.mapOptions.max_geos.forEach(function(feature,layer){
 		feature.bindTooltip(`<i style="font-size:2em;color:red" class="fa fa-chevron-circle-up" aria-hidden="true"></i>`,{
 			permanent:true,
 			opacity:0.8,
@@ -440,9 +554,7 @@ function mapHiLo(){
 		});
 	});
 
-
-
-	// let min_geos = chs.mapOptions.baselayer.getLayers().filter(item => parseFloat(item.feature.properties[chs.mapOptions.field]) === min_value)
+	// let min_geos = chs.mapLayers.baselayer.getLayers().filter(item => parseFloat(item.feature.properties[chs.mapOptions.field]) === min_value)
 	// min_geos.forEach(function(item){
 	// 	let marker = L.marker(item.getCenter(),{icon:chs.mapLayers.loIcon}).bindPopup(`${min_value} %`).on('mouseover',function(){
 	// 		this.openPopup()
@@ -462,6 +574,23 @@ function mapHiLo(){
 	chs.mapLayers.hilo_markers.addTo(chs.map)
 }
 
+function toggleMaxGeos(){
+
+	if(chs.mapOptions.max_geos_toggle)
+	{
+		chs.mapOptions.max_geos.forEach(function(layer){
+			layer.unbindTooltip();
+		})
+		$('#hi-toggle').removeClass('fa-toggle-on').addClass('fa-toggle-off')
+		chs.mapOptions.max_geos_toggle = false;
+	}
+	else
+	{
+		mapHiLo()
+		$('#hi-toggle').removeClass('fa-toggle-off').addClass('fa-toggle-on')
+		chs.mapOptions.max_geos_toggle = true;
+	}
+}
 
 function getRandomPalette(){
 	// let pal = chs.mapOptions.brew.getColorCodesByType().seq

@@ -40,6 +40,28 @@ function createSidebar(){
 
 	/*
 	
+		categorical themes
+	
+		$('.sidebar').append(`<div class="dropdown" id="dropdown-catlayers"></div>`)
+		
+		$('#dropdown-catlayers').selectivity({
+			allowClear: true,
+			items: [
+				{
+					// id: '+00:00',
+					text: 'Categorical themes',
+					children: chs.data.categorical_variables,
+				},
+			],
+			placeholder: 'Categorical Themes',
+			showSearchInputInDropdown: false
+		}).on("change",function(data){
+			console.log(data.value)
+			createCategoricalMap(data.value)
+		});
+		*/ 
+	/*
+	
 		themes
 	
 	*/ 
@@ -47,16 +69,33 @@ function createSidebar(){
 
 	$('#dropdown-layers').selectivity({
 		allowClear: true,
-		items: [{
-			// id: '+00:00',
-			text: 'ACS 2019 5-year Estimates',
-			children: chs.data.variables,
-		}],
+		items: [
+			{
+				// id: '+00:00',
+				text: 'Categorical themes',
+				children: chs.data.categorical_variables,
+			},
+			{
+				// id: '+00:00',
+				text: 'ACS 2019 5-year Estimates',
+				children: chs.data.variables,
+			}
+		],
 		placeholder: 'Themes',
 		showSearchInputInDropdown: false
 	}).on("change",function(data){
 		console.log(data.value)
-		mapGeoJSON({field:data.value})
+		// choropleth or categorical?
+		
+		if(chs.data.categorical_variables.filter(item => item.id === data.value).length > 0)
+		{
+			console.log('it is categorical...')
+			createCategoricalMap(data.value)
+		}
+		else
+		{
+			createChoropleth({field:data.value})
+		}
 	});
 
 	/*
@@ -133,6 +172,53 @@ function createInfoPanel(){
 	Legend
 
 ***************************** */ 
+function createCategoricalLegend(){
+	// legend.onAdd = function (map) {
+		var div = L.DomUtil.create('div', 'legend-inner');
+		
+		let title = chs.data.categorical_variables.filter(item => item.id === chs.mapOptions.category_field)[0].text
+		let html = `<h4>${title}</h4>`
+
+		html += `<table>`
+
+		/*
+		
+			colors and values
+		
+		*/ 
+		chs.mapOptions.category_array.forEach(function(item,index){
+			html += `<tr><td><i style="margin-left:20px;background:${cat_colors[index]}"></i></td>
+			<td><span style="font-size:0.8em;">${item}</span></td></tr>`
+		})
+
+		// div.innerHTML = html;
+
+
+		// $('.legend').html(div)
+
+		/*
+		
+			opacity
+		
+		*/ 
+		html += `<table style="margin-left:20px;"><tr><td style="vertical-align: top;font-size:0.8em;">Opacity</td><td style="vertical-align: middle;"><input type="range" min="1" max="100" value="${chs.mapOptions.fillOpacity*100}" class="slider" id="myRange"></td></tr></table>`;
+
+		div.innerHTML = html;
+
+
+		$('.legend').html(div)
+		
+		var slider = document.getElementById("myRange");
+		slider.oninput = function(){
+			console.log(this.value)
+			chs.mapOptions.fillOpacity = this.value/100
+			chs.mapLayers.baselayer.setStyle({opacity:chs.mapOptions.fillOpacity,fillOpacity:chs.mapOptions.fillOpacity})
+		}
+
+
+
+}
+
 function createLegend(){
 	// legend.onAdd = function (map) {
 		var div = L.DomUtil.create('div', 'legend-inner'),
@@ -154,8 +240,7 @@ function createLegend(){
 			if(to) {
 				html += `<tr><td><i style="margin-left:20px;background:${chs.mapOptions.brew.getColorInRange(to)}"></i></td>
 				<td><span style="font-size:0.8em;">${from.toFixed(0)}% &ndash; ${to.toFixed(0)}%</span></td></tr>`
-			}
-			
+			}	
 		}
 		
 		/*
@@ -163,8 +248,16 @@ function createLegend(){
 			highest values
 		
 		*/ 
-		html += `<tr><td style="vertical-align: middle;"><i style="margin-left:22px;font-size:1.2em;color:red" class="fa fa-chevron-circle-up" aria-hidden="true"></i></td><td style="vertical-align: middle;"><span style="font-size:0.8em;">highest values</span></td></tr></table>`;
+		html += `<tr><td style="vertical-align: middle;"><i style="margin-left:22px;font-size:1.2em;color:red" class="fa fa-chevron-circle-up" aria-hidden="true"></i></td><td style="vertical-align: middle;font-size:0.8em;">highest values</td><td><i id="hi-toggle" onclick="toggleMaxGeos()" class="fa fa-toggle-on" aria-hidden="true" style="font-size:1.3em"></i></td></tr></table>`;
 
+		/*
+		
+		break options
+		
+		*/ 
+		html += `<span style="margin-left:20px;" class='legend-scheme' onclick="createChoropleth({scheme:'quantiles'})">quantiles</span>`;
+		html += `<span class='legend-scheme' onclick="createChoropleth({scheme:'equal_interval'})">equal interval</span>`;
+		
 		/*
 		
 			opacity
@@ -172,42 +265,19 @@ function createLegend(){
 		*/ 
 		html += `<table style="margin-left:20px;"><tr><td style="vertical-align: top;font-size:0.8em;">Opacity</td><td style="vertical-align: middle;"><input type="range" min="1" max="100" value="${chs.mapOptions.fillOpacity*100}" class="slider" id="myRange"></td></tr></table>`;
 
-		/*
-		
-			break options
-		
-		*/ 
-		html += `<span style="margin-left:20px;" class='legend-scheme' onclick="mapGeoJSON({scheme:'quantiles'})">quantiles</span>`;
-		html += `<span class='legend-scheme' onclick="mapGeoJSON({scheme:'equal_interval'})">equal interval</span>`;
-
 		div.innerHTML = html;
 
 
 		$('.legend').html(div)
+
 		var slider = document.getElementById("myRange");
 		slider.oninput = function(){
 			console.log(this.value)
 			chs.mapOptions.fillOpacity = this.value/100
-			chs.mapOptions.baselayer.setStyle({opacity:chs.mapOptions.fillOpacity,fillOpacity:chs.mapOptions.fillOpacity})
+			chs.mapLayers.baselayer.setStyle({opacity:chs.mapOptions.fillOpacity,fillOpacity:chs.mapOptions.fillOpacity})
 		}
-		$("#transparency").ionRangeSlider({
-			skin: 'flat',
-			min: 0,
-			max: 100,
-			from: 50,
-			hide_min_max: true,
-			hide_from_to: true,
-			onChange: function(data){
-				chs.mapOptions.fillOpacity = data.from/100
-				chs.mapOptions.baselayer.setStyle({opacity:chs.mapOptions.fillOpacity,fillOpacity:chs.mapOptions.fillOpacity})
-			}
-		});
-	
-	
-	// 	return div;
-	// };
-		
-	// legend.addTo(chs.map);
+
+
 }
 
 
