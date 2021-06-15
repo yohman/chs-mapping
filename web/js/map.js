@@ -115,6 +115,15 @@ function addDefaultBaseLayer(){
 			onEachFeature: onEachFeature,
 		}
 	).addTo(chs.map)
+	chs.mapLayers.baselayer.getLayers().forEach(function(layer){
+		layer.bindTooltip(layer.feature.properties['GEOID'],{
+			permanent:false,
+			opacity:0.8,
+			className: 'tooltip'
+		});
+	})
+
+
 }
 
 /* **************************** 
@@ -179,35 +188,31 @@ function createMap(){
 			}
 		})
 	}).addTo(chs.map);
-	// L.Control.geocoder({
-	// 	geocoder: L.Control.Geocoder.nominatim({
-	// 		geocodingQueryParams: {countrycodes: 'gb'}
-	// 	})
-	// });
-	// var geocoder=L.Control.geocoder({
-	// 	geocoder: new L.Control.Geocoder.Nominatim({
-	// 		geocodingQueryParams: {
-	// 			"country": "US",
-	// 			"city": "Los Angeles"
-	// 		}
-	// 	})
-	// }).addTo(chs.map)
 
 	geocoder.on('markgeocode', function(event) {
 		console.log(event)
 		var center = event.geocode.center;
 		// L.marker(center).addTo(chs.map);
 		chs.map.setView(center, 15);
-   });
+   	});
 
-	// // const chs.map = new L.chs.Map('chs.map');
-	// const provider = new OpenStreetchs.MapProvider();
-
-	// const searchControl = new GeoSearchControl({
-	// 	provider: provider,
+   	// chs.map.on('zoomend', function() {
+    // 	onZoomEnd();
 	// });
-	// chs.map.addControl(searchControl);
+}
 
+function onZoomEnd(){
+
+	if(chs.map.getZoom() > 14){
+		chs.mapLayers.baselayer.getLayers().forEach(function(layer){
+			layer.bindTooltip(layer.feature.properties['GEOID'],{
+					   permanent:false,
+					   opacity:0.8,
+					   className: 'tooltip'
+				   });
+	   })
+
+	}
 }
 
 /* **************************** 
@@ -290,6 +295,14 @@ function createChoropleth(args){
 			onEachFeature: onEachFeature,
 		}).addTo(chs.map);
 
+		chs.mapLayers.baselayer.getLayers().forEach(function(layer){
+			layer.bindTooltip(layer.feature.properties['GEOID'],{
+				permanent:false,
+				opacity:0.8,
+				className: 'tooltip'
+			});
+		})
+	
 		// create the legend
 		createLegend();
 
