@@ -50,6 +50,7 @@ $( document ).ready(function() {
 	
 	*/ 
 	const csvdata = parseCsv(chs.data.csv_path)
+	const csvdata2 = parseCsv(chs.data.csv_path2)
 	const googledata = parseCsv(chs.data.google_path)
 	const geojsondata = getGeoJson(chs.data.bgs_path)
 
@@ -59,7 +60,7 @@ $( document ).ready(function() {
 	
 	*/ 
 	Promise.all(
-		[geojsondata,csvdata,googledata]
+		[geojsondata,csvdata,csvdata2,googledata]
 	).then(
 		function(results){
 
@@ -70,7 +71,8 @@ $( document ).ready(function() {
 			*/ 
 			chs.data.bgs = results[0]
 			chs.data.csv = results[1]
-			chs.data.google = results[2]
+			chs.data.csv2 = results[2]
+			chs.data.google = results[3]
 
 			/*
 			
@@ -79,18 +81,21 @@ $( document ).ready(function() {
 			*/ 
 			createMap();
 			
-			addDefaultBaseLayer();
-
-			// create a geojson for highlighting
-			chs.mapLayers.highlighted_layer = L.topoJson(chs.data.bgs,{pane:'boundaries'})
-
 			/*
 			
 				Join the geodata to the csv data
 			
 			*/ 
+			addDefaultBaseLayer();
+
+			// create a geojson for highlighting
+			chs.mapLayers.highlighted_layer = L.topoJson(chs.data.bgs,{pane:'boundaries'})
+
 			joinCSV()
+
 			createGeoidList()
+
+			addTooltip();
 
 			/*
 			
@@ -115,13 +120,16 @@ function addDefaultBaseLayer(){
 			onEachFeature: onEachFeature,
 		}
 	).addTo(chs.map)
-	chs.mapLayers.baselayer.getLayers().forEach(function(layer){
-		layer.bindTooltip(layer.feature.properties['GEOID'],{
-			permanent:false,
-			opacity:0.8,
-			className: 'tooltip'
-		});
-	})
+
+	// add tooltip
+	
+	// chs.mapLayers.baselayer.getLayers().forEach(function(layer){
+	// 	layer.bindTooltip(layer.feature.properties['GEOID'],{
+	// 		permanent:false,
+	// 		opacity:0.8,
+	// 		className: 'tooltip'
+	// 	});
+	// })
 
 
 }
@@ -220,11 +228,13 @@ function onZoomEnd(){
 	Map themes (choropleths)
 
 ***************************** */ 
-function createChoropleth(args){
+function addChoroplethLayer(args){
 
-	console.log(args)
+	/*
 	
-
+		If reset requested
+	
+	*/ 
 	if(args.field === null)
 	{
 		if (chs.mapLayers.baselayer){
@@ -295,14 +305,9 @@ function createChoropleth(args){
 			onEachFeature: onEachFeature,
 		}).addTo(chs.map);
 
-		chs.mapLayers.baselayer.getLayers().forEach(function(layer){
-			layer.bindTooltip(layer.feature.properties['GEOID'],{
-				permanent:false,
-				opacity:0.8,
-				className: 'tooltip'
-			});
-		})
-	
+		// add tooltip
+		addTooltip();
+
 		// create the legend
 		createLegend();
 
@@ -314,13 +319,42 @@ function createChoropleth(args){
 
 /* **************************** 
 
+	Add Tooltip on hover
+
+***************************** */ 
+function addTooltip(){
+	chs.mapLayers.baselayer.getLayers().forEach(function(layer){
+
+		/*
+		
+			set the content html
+		
+		*/ 
+		let html = `<div style="font-size:1.4em">${layer.feature.properties['GEOID']}<br>`
+		html += (layer.feature.properties['CSA_Name']!='') ? `<div style="font-size:1.4em">${layer.feature.properties['CSA_Name']}</div>` : '';
+		html += (layer.feature.properties['Current_Agency']!='') ? `${layer.feature.properties['Current_Agency']}<br>` : '';
+		html += (layer.feature.properties['Block_Code']!='') ? `Block code: ${layer.feature.properties['Block_Code']}<br>` : '';
+		html += (layer.feature.properties['Current_Outreach']!='') ? `Outreach: ${layer.feature.properties['Current_Outreach']}<br>` : '';
+		html += (layer.feature.properties['CHW_commun']!='') ? `CHW: ${layer.feature.properties['CHW_commun']}<br>` : '';
+		html += '</div>'
+
+
+		layer.bindTooltip(html,{
+			permanent:false,
+			opacity:0.8,
+			className: 'tooltip'
+		});
+	})
+}
+/* **************************** 
+
 	Create categorical map
 
 ***************************** */ 
 // let cat_colors = ['#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99','#e31a1c','#fdbf6f','#ff7f00','#cab2d6','#6a3d9a','#ffff99','#b15928']
 let cat_colors = d3.scale.category20().range()
 
-function createCategoricalMap(field){
+function addCategoricalLayer(field){
 
 	// empty themes
 	// $('#dropdown-layers').selectivity('clear')
@@ -383,6 +417,9 @@ function createCategoricalMap(field){
 			onEachFeature: onEachFeature,
 		}).addTo(chs.map);
 	
+		// add tooltip
+		addTooltip();
+
 		createCategoricalLegend();
 	
 	}
@@ -428,6 +465,11 @@ function addBoundaryLayer(id_text){
 	// find it in the list of layers
 	layer2add = chs.data.boundaries.find(({id}) => id === id_text)
 
+	/*
+	
+		add boundary layer
+	
+	*/ 
 	if(layer2add != undefined){
 		$.getJSON(layer2add.path,function(data){
 			boundary_options = {
@@ -444,13 +486,16 @@ function addBoundaryLayer(id_text){
 					}
 				}
 			}
-			chs.mapLayers.boundary = L.geoJson(data,boundary_options).addTo(chs.map)
-			// chs.mapLayers.boundary = L.geoJson(data,boundary_options).bindTooltip(function (layer) {
-			// 	return 'hello'
-			// 	// return layer.feature.properties.name; //merely sets the tooltip text
-			//  }, {permanent: true, opacity: 0.5}  //then add your options
-			// ).addTo(chs.map);
+			// geo or topo json?
+			if(layer2add.type === 'geojson'){
+				chs.mapLayers.boundary = L.geoJson(data,boundary_options).addTo(chs.map)
+			}
+			else{
+				console.log('this is a topojson layer')
+				chs.mapLayers.boundary = L.topoJson(data,boundary_options).addTo(chs.map)
+			}
 		})
+		
 	}
 	else{
 		console.log('layer ' + id_text + ' not found')
@@ -469,38 +514,37 @@ function getStyle(feature){
 	}
 }
 
-// return the color for each feature
-function getColor(d) {
-
-	return d > 1000000000 ? '#800026' :
-		   d > 500000000  ? '#BD0026' :
-		   d > 200000000  ? '#E31A1C' :
-		   d > 100000000  ? '#FC4E2A' :
-		   d > 50000000   ? '#FD8D3C' :
-		   d > 20000000   ? '#FEB24C' :
-		   d > 10000000   ? '#FED976' :
-					  '#FFEDA0';
-}
-
 
 function joinCSV(){
+
+	/*
+	
+		do the joins
+	
+	*/ 
 	chs.mapLayers.baselayer.eachLayer(function(layer) {
 		featureJoinByProperty(layer.feature.properties, chs.data.csv.data, "GEOID");
 	});
+	
+	chs.mapLayers.baselayer.eachLayer(function(layer) {
+		featureJoinByProperty(layer.feature.properties, chs.data.csv2.data, "GEOID");
+	});
+
+	// google sheet for "live" data
 	chs.mapLayers.baselayer.eachLayer(function(layer) {
 		featureJoinByProperty(layer.feature.properties, chs.data.google.data, "GEOID");
 	});
+
+	/*
+	
+		add it to global data var
+	
+	*/ 
 	chs.data.data = []
 	chs.mapLayers.baselayer.eachLayer(function(layer) {
 		chs.data.data.push(layer.feature.properties)
 	});
 }
-
-// function getDataPath(){
-// 	return 	(geojson_scale === 'tracts') ? 'data/acs_vars_results_tracts.csv' : 
-// 			(geojson_scale === 'bg') ? 'data/acs_vars_results_blockgroups.csv': ''
-// }
-
 
 function createGeoidList(){
 	chs.mapLayers.baselayer.eachLayer(function(item){

@@ -57,7 +57,7 @@ function createSidebar(){
 			showSearchInputInDropdown: false
 		}).on("change",function(data){
 			console.log(data.value)
-			createCategoricalMap(data.value)
+			addCategoricalLayer(data.value)
 		});
 		*/ 
 	/*
@@ -90,11 +90,11 @@ function createSidebar(){
 		if(chs.data.categorical_variables.filter(item => item.id === data.value).length > 0)
 		{
 			console.log('it is categorical...')
-			createCategoricalMap(data.value)
+			addCategoricalLayer(data.value)
 		}
 		else
 		{
-			createChoropleth({field:data.value})
+			addChoroplethLayer({field:data.value})
 		}
 	});
 
@@ -255,8 +255,8 @@ function createLegend(){
 		break options
 		
 		*/ 
-		html += `<span style="margin-left:20px;" class='legend-scheme' onclick="createChoropleth({scheme:'quantiles'})">quantiles</span>`;
-		html += `<span class='legend-scheme' onclick="createChoropleth({scheme:'equal_interval'})">equal interval</span>`;
+		html += `<span style="margin-left:20px;" class='legend-scheme' onclick="addChoroplethLayer({scheme:'quantiles'})">quantiles</span>`;
+		html += `<span class='legend-scheme' onclick="addChoroplethLayer({scheme:'equal_interval'})">equal interval</span>`;
 		
 		/*
 		
@@ -313,7 +313,7 @@ function createChart(properties){
 		<h4>
 			<span style="font-size:1.3em">Community Profile<br>
 			<span style="font-size:0.7em;color:#666"">${properties.GEOID}</span><br>
-			${additional_html}
+			<!-- ${additional_html} -->
 		</h4>
 		<div style="font-size:4em;">${total_pop}</div>
 		<span>persons</span>

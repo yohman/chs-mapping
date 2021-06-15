@@ -96,58 +96,67 @@ chs.data = {
 	bgs:		'',
 	google:		'',
 	csv:		'',
+	csv2:		'',
 	bgs_path:	'data/boundaries/bg_topo.json',
 	google_path:'https://docs.google.com/spreadsheets/d/e/2PACX-1vQBdJuAIqA2SBcJ-uf38wM0Ce7POFWVTFx6VnjjeC_5yLfw3HDBHDr7uOr0mAnEF1piO2DRDhuDCl2U/pub?gid=1680290540&single=true&output=csv',
 	csv_path:	'data/acs_vars_results_blockgroups.csv',
+	csv_path2:	'data/bg_results/bg.csv',
 	boundaries: [
 		{
 			text: 'Service Planning Areas (2012)',
 			id: 'SPA',
 			path: 'data/spa.geojson',
 			name_field: 'name',
-			label: true
+			label: true,
+			type: 'geojson'
 		},
 		{
 			text: 'LA County Supervisors District (2011)',
 			id: 'sd',
 			path: 'data/sd.geojson',
 			name_field: 'name',
-			label: true
+			label: true,
+			type: 'geojson'
 		},
 		{
 			text: 'LA County Neighborhoods',
 			id: 'neighborhoods',
 			path: 'data/latimes_place_lacounty.geojson',
 			name_field: 'name',
-			label: true
+			label: true,
+			type: 'geojson'
 		},
 		{
 			text: 'LA County Regions',
 			id: 'regions',
 			path: 'data/regions.geojson',
 			name_field: 'name',
-			label: true
+			label: true,
+			type: 'geojson'
 		},
 		{
 			text: 'L.A. City Council District (2012)',
 			id: 'council',
 			path: 'data/council.geojson',
 			name_field: 'name',
-			label: true
+			label: true,
+			type: 'geojson'
 		},
 		{
 			text: 'Zipcodes',
 			id: 'zipcodes',
 			path: 'data/boundaries/zipcodes.geojson',
 			name_field: 'ZIPCODE',
-			label: true
+			label: true,
+			type: 'geojson'
 		},
 		{
 			text: 'L.A. Census Block Groups',
 			id: 'bg',
-			path: 'data/boundaries/bg.geojson',
+			path: 'data/boundaries/bg_topo.json',
 			name_field: 'name',
-			label: false
+			label: false,
+			type: 'topojson'
 		},
 	],
 	categorical_variables: [
@@ -223,6 +232,12 @@ chs.data = {
 			geography: 'bg',
 			text: 'Percent Non Hispanic American Indian and Alaska Native',
 			id: 'NonHisp_ai_per',
+			type: 'choropleth'
+		},
+		{
+			geography: 'bg',
+			text: 'Vaccination Percentage',
+			id: 'vac_per',
 			type: 'choropleth'
 		},
 	],
