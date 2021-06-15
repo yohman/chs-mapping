@@ -44,4 +44,4 @@ Search by block code
 Info panel
 <img src="logs/2021-05-18 infopanel.png">
 Dropdowns
-<img src="logs/2021-05-18 dropdowns.png">
+<img src="logs/2021-05-15 dropdowns.png">
