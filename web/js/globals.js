@@ -119,7 +119,7 @@ chs.data = {
 			type: 'geojson'
 		},
 		{
-			text: 'LA County Neighborhoods',
+			text: 'Cities/Communities',
 			id: 'neighborhoods',
 			path: 'data/latimes_place_lacounty.geojson',
 			name_field: 'name',
@@ -172,73 +172,97 @@ chs.data = {
 			id: 'Priority_Decile',
 			type: 'categorical'
 		},
+		// {
+		// 	geography: 'bg',
+		// 	text: 'CSA Name',
+		// 	id: 'CSA_Name',
+		// 	type: 'categorical'
+		// },
 	],
 	variables: [
 			{
 			geography: 'bg',
 			text: 'Total Population',
 			id: 'Pop_total',
-			type: 'choropleth'
+			type: 'choropleth',
+			percent: false,
 		},
 		{
 			geography: 'bg',
 			text: 'Percent Limited English',
 			id: 'Limited_Eng_per',
-			type: 'choropleth'
+			type: 'choropleth',
+			percent: true,
 		},
 		{
 			geography: 'bg',
 			text: 'Percent Uninsured',
 			id: 'Uninsured_per',
-			type: 'choropleth'
+			type: 'choropleth',
+			percent: true,
 		},
 		{
 			geography: 'bg',
 			text: 'Below 100 percent of the poverty level',
 			id: 'Poverty_per',
-			type: 'choropleth'
+			type: 'choropleth',
+			percent: true,
 		},
 		{
 			geography: 'bg',
 			text: 'Percent Hispanic or Latino',
 			id: 'Hisp_per',
-			type: 'choropleth'
+			type: 'choropleth',
+			percent: true,
 		},
 		{
 			geography: 'bg',
 			text: 'Percent Non Hispanic Asian',
 			id: 'NonHisp_asian_per',
-			type: 'choropleth'
+			type: 'choropleth',
+			percent: true,
 		},
 		{
 			geography: 'bg',
 			text: 'Percent Non Hispanic Black',
 			id: 'NonHisp_black_per',
-			type: 'choropleth'
+			type: 'choropleth',
+			percent: true,
 		},
 		{
 			geography: 'bg',
 			text: 'Percent Non Hispanic White',
 			id: 'NonHisp_white_per',
-			type: 'choropleth'
+			type: 'choropleth',
+			percent: true,
 		},
 		{
 			geography: 'bg',
 			text: 'Percent Non Hispanic Native Hawaiian and Other PI',
 			id: 'NonHisp_pi_per',
-			type: 'choropleth'
+			type: 'choropleth',
+			percent: true,
 		},
 		{
 			geography: 'bg',
 			text: 'Percent Non Hispanic American Indian and Alaska Native',
 			id: 'NonHisp_ai_per',
-			type: 'choropleth'
+			type: 'choropleth',
+			percent: true,
 		},
 		{
 			geography: 'bg',
-			text: 'Vaccination Percentage',
+			text: 'Percent Vaccinated (June 4, 2021)',
 			id: 'vac_per',
-			type: 'choropleth'
+			type: 'choropleth',
+			percent: true,
+		},
+		{
+			geography: 'bg',
+			text: 'Outreach count',
+			id: 'Current_Outreach',
+			type: 'choropleth',
+			percent: false,
 		},
 	],
 }

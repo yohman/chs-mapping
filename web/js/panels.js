@@ -224,8 +224,8 @@ function createLegend(){
 		var div = L.DomUtil.create('div', 'legend-inner'),
 		breaks = chs.mapOptions.brew.getBreaks(),
 		from, to;
-		let title = chs.data.variables.find( ({ id }) => id === chs.mapOptions.field)
-		let html = `<h4>${title.text}</h4>`
+		let variable = chs.data.variables.find( ({ id }) => id === chs.mapOptions.field)
+		let html = `<h4>${variable.text}</h4>`
 
 		html += `<table>`
 
@@ -238,8 +238,14 @@ function createLegend(){
 			from = breaks[i];
 			to = breaks[i + 1];
 			if(to) {
-				html += `<tr><td><i style="margin-left:20px;background:${chs.mapOptions.brew.getColorInRange(to)}"></i></td>
-				<td><span style="font-size:0.8em;">${from.toFixed(0)}% &ndash; ${to.toFixed(0)}%</span></td></tr>`
+				if(variable.percent){
+					html += `<tr><td><i style="margin-left:20px;background:${chs.mapOptions.brew.getColorInRange(to)}"></i></td>
+					<td><span style="font-size:0.8em;">${from.toFixed(0)}% &ndash; ${to.toFixed(0)}%</span></td></tr>`
+				}
+				else{
+					html += `<tr><td><i style="margin-left:20px;background:${chs.mapOptions.brew.getColorInRange(to)}"></i></td>
+					<td><span style="font-size:0.8em;">${from.toFixed(0)} &ndash; ${to.toFixed(0)}</span></td></tr>`
+				}
 			}	
 		}
 		
@@ -312,7 +318,7 @@ function createChart(properties){
 	<div style="text-align:center">
 		<h4>
 			<span style="font-size:1.3em">Community Profile<br>
-			<span style="font-size:0.7em;color:#666"">${properties.GEOID}</span><br>
+			<span style="font-size:1em;color:#666"">Block code: ${properties.Block_Code}</span><br>
 			<!-- ${additional_html} -->
 		</h4>
 		<div style="font-size:4em;">${total_pop}</div>

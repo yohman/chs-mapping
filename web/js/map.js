@@ -204,6 +204,13 @@ function createMap(){
 		chs.map.setView(center, 15);
    	});
 
+	/*
+	
+		user location
+	
+	*/ 
+	L.control.locate().addTo(chs.map);
+
    	// chs.map.on('zoomend', function() {
     // 	onZoomEnd();
 	// });
@@ -272,12 +279,14 @@ function addChoroplethLayer(args){
 				values.push(parseFloat(item.feature.properties[chs.mapOptions.field]))
 			}
 		})
+
+		// get rid of NaN's
+		values = values.filter(e => (e === 0 || e));
 		
 		chs.mapOptions.brew.setSeries(values);
 		chs.mapOptions.brew.setNumClasses(chs.mapOptions.num_classes);
 		chs.mapOptions.brew.setColorCode(chs.mapOptions.choroplethColors);
 		chs.mapOptions.brew.classify(chs.mapOptions.scheme);
-		
 		
 		/*
 		
@@ -330,20 +339,23 @@ function addTooltip(){
 			set the content html
 		
 		*/ 
-		let html = `<div style="font-size:1.4em">${layer.feature.properties['GEOID']}<br>`
-		html += (layer.feature.properties['CSA_Name']!='') ? `<div style="font-size:1.4em">${layer.feature.properties['CSA_Name']}</div>` : '';
+		// let html = `<div style="font-size:1.4em">`
+		let html = (layer.feature.properties['Block_Code']!='') ? `<div style="font-size:1.6em;border-bottom:1px solid #aaa;font-weight: bold;padding:4px;margin-bottom:8px;">Block code: ${layer.feature.properties['Block_Code']}</div>` : '';
+		html += (layer.feature.properties['CSA_Name']!='') ? `${layer.feature.properties['CSA_Name']}<br>` : '';
 		html += (layer.feature.properties['Current_Agency']!='') ? `${layer.feature.properties['Current_Agency']}<br>` : '';
-		html += (layer.feature.properties['Block_Code']!='') ? `Block code: ${layer.feature.properties['Block_Code']}<br>` : '';
-		html += (layer.feature.properties['Current_Outreach']!='') ? `Outreach: ${layer.feature.properties['Current_Outreach']}<br>` : '';
-		html += (layer.feature.properties['CHW_commun']!='') ? `CHW: ${layer.feature.properties['CHW_commun']}<br>` : '';
-		html += '</div>'
+		html += (layer.feature.properties['Current_Outreach']!='') ? `Outreach count: ${layer.feature.properties['Current_Outreach']}<br>` : '';
+		// html += (layer.feature.properties['CHW_commun']!='') ? `CHW: ${layer.feature.properties['CHW_commun']}<br>` : '';
+		// html += '</div>'
 
+		if(html != ''){
+			html = `<div style="font-size:1.4em">${html}</div>`
+			layer.bindTooltip(html,{
+				permanent:false,
+				opacity:0.8,
+				className: 'tooltip'
+			});
+		}
 
-		layer.bindTooltip(html,{
-			permanent:false,
-			opacity:0.8,
-			className: 'tooltip'
-		});
 	})
 }
 /* **************************** 
