@@ -104,43 +104,51 @@ chs.data = {
 			text: 'Service Planning Areas (2012)',
 			id: 'SPA',
 			path: 'data/spa.geojson',
-			name_field: 'name'
+			name_field: 'name',
+			label: true
 		},
 		{
 			text: 'LA County Supervisors District (2011)',
 			id: 'sd',
 			path: 'data/sd.geojson',
-			name_field: 'name'
+			name_field: 'name',
+			label: true
 		},
 		{
 			text: 'LA County Neighborhoods',
 			id: 'neighborhoods',
 			path: 'data/latimes_place_lacounty.geojson',
-			name_field: 'name'
+			name_field: 'name',
+			label: true
 		},
 		{
 			text: 'LA County Regions',
 			id: 'regions',
 			path: 'data/regions.geojson',
-			name_field: 'name'
+			name_field: 'name',
+			label: true
 		},
 		{
 			text: 'L.A. City Council District (2012)',
 			id: 'council',
 			path: 'data/council.geojson',
-			name_field: 'name'
+			name_field: 'name',
+			label: true
 		},
 		{
 			text: 'Zipcodes',
 			id: 'zipcodes',
 			path: 'data/boundaries/zipcodes.geojson',
-			name_field: 'ZIPCODE'
+			name_field: 'ZIPCODE',
+			label: true
 		},
-		// {
-		// 	text: 'L.A. Census Block Groups',
-		// 	id: 'bg',
-		// 	path: 'data/la_bg.geojson'
-		// },
+		{
+			text: 'L.A. Census Block Groups',
+			id: 'bg',
+			path: 'data/boundaries/bg.geojson',
+			name_field: 'name',
+			label: false
+		},
 	],
 	categorical_variables: [
 		{

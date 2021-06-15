@@ -435,11 +435,13 @@ function addBoundaryLayer(id_text){
 				weight: 1.5,
 				pane:'boundaries',
 				onEachFeature: function(feature,layer){
-					layer.bindTooltip(feature.properties[layer2add.name_field],{
-						permanent:true,
-						opacity:0.8,
-						className: 'tooltip'
-					});
+					if(layer2add.label){
+						layer.bindTooltip(feature.properties[layer2add.name_field],{
+							permanent:true,
+							opacity:0.8,
+							className: 'tooltip'
+						});
+					}
 				}
 			}
 			chs.mapLayers.boundary = L.geoJson(data,boundary_options).addTo(chs.map)
