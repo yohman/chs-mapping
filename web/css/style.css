@@ -20,7 +20,7 @@ h4 {
 
 body {
 	display: grid;
-	grid-template-rows: 60px 205px 1fr;
+	grid-template-rows: 60px 225px 1fr;
 	grid-template-columns: 300px 1fr 300px;
 	grid-template-areas: 
 	"header header header"

@@ -473,6 +473,8 @@ function addBoundaryLayer(id_text){
 	{
 		chs.mapLayers.boundary.clearLayers()
 	}
+	$('.boundary-toggle-container').empty();
+	chs.mapOptions.boundary_label_toggle = true;
 
 	// find it in the list of layers
 	layer2add = chs.data.boundaries.find(({id}) => id === id_text)
@@ -507,7 +509,9 @@ function addBoundaryLayer(id_text){
 				chs.mapLayers.boundary = L.topoJson(data,boundary_options).addTo(chs.map)
 			}
 		})
-		
+
+		$('.sidebar').append(`<div class="boundary-toggle-container" style="margin-left:10px;font-size:0.8em">Labels <i id="boundary-toggle" onclick="toggleBoundaryLabels()" class="fa fa-toggle-on" aria-hidden="true" style="font-size:1.3em"></i></div>`)
+				
 	}
 	else{
 		console.log('layer ' + id_text + ' not found')
@@ -660,6 +664,29 @@ function toggleMaxGeos(){
 		mapHiLo()
 		$('#hi-toggle').removeClass('fa-toggle-off').addClass('fa-toggle-on')
 		chs.mapOptions.max_geos_toggle = true;
+	}
+}
+function toggleBoundaryLabels(){
+
+	if(chs.mapOptions.boundary_label_toggle)
+	{
+		chs.mapLayers.boundary.getLayers().forEach(function(layer){
+			layer.unbindTooltip();   
+		})
+		$('#boundary-toggle').removeClass('fa-toggle-on').addClass('fa-toggle-off')
+		chs.mapOptions.boundary_label_toggle = false;
+	}
+	else
+	{
+		$('#boundary-toggle').removeClass('fa-toggle-off').addClass('fa-toggle-on')
+		chs.mapLayers.boundary.getLayers().forEach(function(layer){
+			layer.bindTooltip(layer.feature.properties[layer2add.name_field],{
+				permanent:true,
+				opacity:0.8,
+				className: 'tooltip'
+			})
+		})
+		chs.mapOptions.boundary_label_toggle = true;
 	}
 }
 

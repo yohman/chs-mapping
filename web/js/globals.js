@@ -33,6 +33,7 @@ chs.mapOptions = {
 	choroplethColors: '',
 	max_geos:		'', //filtered layer of polygons with max values
 	max_geos_toggle: true,
+	boundary_label_toggle: true,
 	bounds: 		[
 		[34.840471137173814,-117.64558196067811],
 		[33.65310164305273,-118.95295500755311]
