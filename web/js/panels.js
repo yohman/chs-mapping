@@ -300,10 +300,11 @@ function createChart(properties){
 		if(properties.Block_Code != '')
 		{
 			additional_html = `
-			<span style="font-size:0.7em;color:#666">Block code: ${properties.Block_Code}</span><br>
-			<span style="font-size:0.7em;color:#666">Priority: ${properties.Priority_Decile}</span><br>
-			<span style="font-size:0.7em;color:#666">${properties.Current_Agency}</span>
+			<span style="font-size:1.6em;padding: 4px;margin:4px;">Block code: ${properties.Block_Code}</span>
 			`
+
+			// <span style="font-size:0.7em;color:#666">Priority: ${properties.Priority_Decile}</span><br>
+			// <span style="font-size:0.7em;color:#666">${properties.Current_Agency}</span>
 		}
 		else
 		{
@@ -318,11 +319,9 @@ function createChart(properties){
 	<div style="text-align:center">
 		<h4>
 			<span style="font-size:1.3em">Community Profile<br>
-			<span style="font-size:1em;color:#666"">Block code: ${properties.Block_Code}</span><br>
-			<!-- ${additional_html} -->
 		</h4>
-		<div style="font-size:4em;">${total_pop}</div>
-		<span>persons</span>
+		${additional_html}
+		<div style="font-size:0.8em;color:#666">Total population: ${total_pop}</div>
 	</div>
 	<table width="100%">
 	<tr><td width="50%" id="dash1"></td><td width="50%" id="dash2"></td></tr>
