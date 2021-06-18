@@ -4,6 +4,10 @@ https://yohman.github.io/chs-mapping/web/
 
 ## Change log
 
+### 2021-06-17
+Boundary label toggle
+<img src="logs/2021-06-17 boundary toggle.png">
+
 ### 2021-06-15
 User location
 <img src="logs/2021-06-15 user location.png">
