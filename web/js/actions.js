@@ -41,6 +41,7 @@ function highlightFeature(e) {
 
 ***************************** */ 
 function resetHighlight(e) {
+	$('#charts').empty();
 	chs.mapLayers.baselayer.resetStyle(e.target);
 }
 

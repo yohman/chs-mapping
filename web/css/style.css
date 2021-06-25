@@ -243,3 +243,7 @@ hr {
 .tooltip {
 	font-size: 0.7em;
 }
+
+.pages-print-container [leaflet-browser-print-pages-hide] {
+	display: none;
+}

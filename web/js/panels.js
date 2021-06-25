@@ -201,7 +201,7 @@ function createCategoricalLegend(){
 			opacity
 		
 		*/ 
-		html += `<table style="margin-left:20px;"><tr><td style="vertical-align: top;font-size:0.8em;">Opacity</td><td style="vertical-align: middle;"><input type="range" min="1" max="100" value="${chs.mapOptions.fillOpacity*100}" class="slider" id="myRange"></td></tr></table>`;
+		html += `<table style="margin-left:20px;" leaflet-browser-print-pages-hide><tr><td style="vertical-align: top;font-size:0.8em;">Opacity</td><td style="vertical-align: middle;"><input type="range" min="1" max="100" value="${chs.mapOptions.fillOpacity*100}" class="slider" id="myRange"></td></tr></table>`;
 
 		div.innerHTML = html;
 
@@ -261,15 +261,15 @@ function createLegend(){
 		break options
 		
 		*/ 
-		html += `<span style="margin-left:20px;" class='legend-scheme' onclick="addChoroplethLayer({scheme:'quantiles'})">quantiles</span>`;
-		html += `<span class='legend-scheme' onclick="addChoroplethLayer({scheme:'equal_interval'})">equal interval</span>`;
+		html += `<span style="margin-left:20px;" class='legend-scheme' onclick="addChoroplethLayer({scheme:'quantiles'})" leaflet-browser-print-pages-hide>quantiles</span>`;
+		html += `<span class='legend-scheme' onclick="addChoroplethLayer({scheme:'equal_interval'})" leaflet-browser-print-pages-hide>equal interval</span>`;
 		
 		/*
 		
 			opacity
 		
 		*/ 
-		html += `<table style="margin-left:20px;"><tr><td style="vertical-align: top;font-size:0.8em;">Opacity</td><td style="vertical-align: middle;"><input type="range" min="1" max="100" value="${chs.mapOptions.fillOpacity*100}" class="slider" id="myRange"></td></tr></table>`;
+		html += `<table style="margin-left:20px;" leaflet-browser-print-pages-hide><tr><td style="vertical-align: top;font-size:0.8em;">Opacity</td><td style="vertical-align: middle;"><input type="range" min="1" max="100" value="${chs.mapOptions.fillOpacity*100}" class="slider" id="myRange"></td></tr></table>`;
 
 		div.innerHTML = html;
 

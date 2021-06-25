@@ -211,6 +211,15 @@ function createMap(){
 	*/ 
 	L.control.locate().addTo(chs.map);
 
+	/*
+	
+		print button
+	
+	*/ 
+	L.control.browserPrint({
+		printModes: ["Portrait", "Landscape"]
+	}).addTo(chs.map)
+	// L.Control.BrowserPrint.Utils.registerRenderer(L.Tooltip, 'L.Tooltip');
    	// chs.map.on('zoomend', function() {
     // 	onZoomEnd();
 	// });

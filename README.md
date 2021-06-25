@@ -4,6 +4,11 @@ https://yohman.github.io/chs-mapping/web/
 
 ## Change log
 
+### 2021-06-25
+Print feature
+<img src="logs/2021-06-25 print1.png">
+<img src="logs/2021-06-25 print2.png">
+
 ### 2021-06-17
 Boundary label toggle
 <img src="logs/2021-06-17 boundary toggle.png">
