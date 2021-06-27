@@ -56,7 +56,6 @@ function createSidebar(){
 			placeholder: 'Categorical Themes',
 			showSearchInputInDropdown: false
 		}).on("change",function(data){
-			console.log(data.value)
 			addCategoricalLayer(data.value)
 		});
 		*/ 
@@ -84,12 +83,10 @@ function createSidebar(){
 		placeholder: 'Themes',
 		showSearchInputInDropdown: false
 	}).on("change",function(data){
-		console.log(data.value)
 		// choropleth or categorical?
 		
 		if(chs.data.categorical_variables.filter(item => item.id === data.value).length > 0)
 		{
-			console.log('it is categorical...')
 			addCategoricalLayer(data.value)
 		}
 		else
@@ -136,8 +133,9 @@ function createInfoPanel(){
 
 	// method that we will use to update the control based on feature properties passed
 	chs.panels.info.update = function (properties) {
-
-		let count = chs.mapLayers.highlighted.getLayers().length;
+		console.log('infopanel updating...')
+		// let count = chs.mapLayers.highlighted.getLayers().length;
+		let count = chs.mapLayers.selected_geoids.length;
 
 		if(count > 0){
 			if(count === 1){
@@ -146,9 +144,10 @@ function createInfoPanel(){
 			else{
 				this._div.innerHTML = `${count} features selected`
 			}
-			this._div.innerHTML += ` <button style="" onclick="chs.mapLayers.highlighted.clearLayers();chs.panels.info.update()">clear</button>`
+			this._div.innerHTML += ` <button style="" onclick="clearHighlightedFeatures()">clear</button>`
 		}
 		else{
+			hover = true;
 			this._div.innerHTML = 'Click on a block group to select it';
 		}
 
@@ -166,6 +165,12 @@ function createInfoPanel(){
 	chs.panels.info.addTo(chs.map);
 }
 
+function clearHighlightedFeatures(){
+	hover=true;
+	chs.mapLayers.selected_geoids = [];
+	chs.mapLayers.highlighted.clearLayers();
+	chs.panels.info.update()
+}
 
 /* **************************** 
 
@@ -210,7 +215,6 @@ function createCategoricalLegend(){
 		
 		var slider = document.getElementById("myRange");
 		slider.oninput = function(){
-			console.log(this.value)
 			chs.mapOptions.fillOpacity = this.value/100
 			chs.mapLayers.baselayer.setStyle({opacity:chs.mapOptions.fillOpacity,fillOpacity:chs.mapOptions.fillOpacity})
 		}
@@ -278,7 +282,6 @@ function createLegend(){
 
 		var slider = document.getElementById("myRange");
 		slider.oninput = function(){
-			console.log(this.value)
 			chs.mapOptions.fillOpacity = this.value/100
 			chs.mapLayers.baselayer.setStyle({opacity:chs.mapOptions.fillOpacity,fillOpacity:chs.mapOptions.fillOpacity})
 		}
@@ -292,36 +295,120 @@ function createLegend(){
 	Dashboard
 
 ***************************** */ 
-function createChart(properties){
+function createChart(GEOIDs){
 
-	// for now, total pop is different
-	// if(geojson_scale === 'bg'){
-		total_pop = properties.Pop_total
-		if(properties.Block_Code != '')
-		{
+	/*
+	
+		set the chart variables
+	
+	*/ 
+	let people_in_poverty = 0;
+	let total_pop_poverty = 0;
+
+	let people_uninsured = 0;
+	let total_pop_uninsured = 0;
+
+	let people_english = 0;
+	let total_pop_english = 0;
+
+	let people_hisp = 0;
+	let people_NonHisp_black = 0;
+	let people_NonHisp_white = 0;
+	let people_NonHisp_asian = 0;
+	let total_pop_race = 0;
+
+	let blockcodes = [];
+
+	let Pop_total = 0;
+
+	/*
+	
+		for each geoid, summarize the data
+	
+	*/ 
+	GEOIDs.forEach(function(geoid){
+
+		properties = chs.data.data.filter(item => item.GEOID === geoid)[0]
+
+		Pop_total += parseInt(properties.Pop_total)
+
+		blockcodes.push(properties.Block_Code)
+
+		people_in_poverty += parseInt(properties.B17021_002E)
+		total_pop_poverty += parseInt(properties.B17021_001E)
+		
+		people_uninsured += parseInt(properties.B27010_017E)+parseInt(properties.B27010_033E)+parseInt(properties.B27010_050E)+parseInt(properties.B27010_066E)
+		total_pop_uninsured += parseInt(properties.B27010_001E)
+
+		people_english += parseInt(properties.B16004_007E) + parseInt(properties.B16004_008E) +
+			parseInt(properties.B16004_012E) + parseInt(properties.B16004_013E) +
+			parseInt(properties.B16004_017E) + parseInt(properties.B16004_018E) +
+			parseInt(properties.B16004_022E) + parseInt(properties.B16004_023E) +
+			parseInt(properties.B16004_029E) + parseInt(properties.B16004_030E) +
+			parseInt(properties.B16004_034E) + parseInt(properties.B16004_035E) +
+			parseInt(properties.B16004_039E) + parseInt(properties.B16004_040E) +
+			parseInt(properties.B16004_044E) + parseInt(properties.B16004_045E) +
+			parseInt(properties.B16004_051E) + parseInt(properties.B16004_052E) +
+			parseInt(properties.B16004_056E) + parseInt(properties.B16004_057E) +
+			parseInt(properties.B16004_061E) + parseInt(properties.B16004_062E) +
+			parseInt(properties.B16004_066E) + parseInt(properties.B16004_067E)
+		total_pop_english += parseInt(properties.B16004_001E)
+
+		people_hisp += parseInt(properties.B03002_012E);
+		people_NonHisp_black += parseInt(properties.B03002_004E);
+		people_NonHisp_white += parseInt(properties.B03002_003E);
+		people_NonHisp_asian += parseInt(properties.B03002_006E);
+		total_pop_race += parseInt(properties.B03002_001E)
+	})
+	
+	/*
+	
+		calculate the percent of total
+	
+	*/ 
+	let percent_poverty = people_in_poverty/total_pop_poverty * 100;
+	let Uninsured_per = people_uninsured/total_pop_uninsured * 100;
+	let Limited_Eng_per = people_english/total_pop_english * 100;
+
+	let Hisp_per = people_hisp/total_pop_race * 100;
+	let NonHisp_black_per = people_NonHisp_black/total_pop_race * 100;
+	let NonHisp_white_per = people_NonHisp_white/total_pop_race * 100;
+	let NonHisp_asian_per = people_NonHisp_asian/total_pop_race * 100;
+
+	/*
+	
+		show difference if block code exists
+	
+	*/ 
+	if(GEOIDs.length == 1){
+	
+		if(properties.Block_Code != ''){
 			additional_html = `
 			<span style="font-size:1.6em;padding: 4px;margin:4px;">Block code: ${properties.Block_Code}</span>
 			`
+		}
+		else{
+			additional_html = '<span style="font-size:1.2em;padding: 4px;margin:4px;"><i>No block code</i></span>'
+		}
 
-			// <span style="font-size:0.7em;color:#666">Priority: ${properties.Priority_Decile}</span><br>
-			// <span style="font-size:0.7em;color:#666">${properties.Current_Agency}</span>
-		}
-		else
-		{
-			additional_html = ''
-		}
-	// }
-	// else{
-	// 	total_pop = properties.total_pop
-	// }
-	// empty dashboard
+	}
+	else
+	{
+		additional_html = 'You have selected ' + GEOIDs.length + ' block groups'
+	}
+
+	/*
+	
+		create the html
+	
+	*/ 
 	$('#charts').html(`
 	<div style="text-align:center">
 		<h4>
 			<span style="font-size:1.3em">Community Profile<br>
 		</h4>
 		${additional_html}
-		<div style="font-size:0.8em;color:#666">Total population: ${total_pop}</div>
+		<div style="font-size:0.8em;color:#666">Total population: ${Pop_total}</div>
 	</div>
 	<table width="100%">
 	<tr><td width="50%" id="dash1"></td><td width="50%" id="dash2"></td></tr>
@@ -334,116 +421,10 @@ function createChart(properties){
 		Poverty
 	
 	*/ 
-	var options = {
-		series: [Math.round(properties.Poverty_per)],
-		chart: {
-			height: 150,
-			type: 'radialBar',
-			animations: {
-				enabled: false,
-			}
-	  	},
-		plotOptions: {
-			radialBar: {
-				hollow: {
-					size: '60%',
-				},
-				dataLabels: {
-					show: true,
-					name: {
-						show: true,
-						color: '#888',
-						fontSize: '12px'
-					},
-				},
-			},
-		},
-
-		labels: ['In Poverty'],
-	  };
-	//   var chart = new ApexCharts(document.querySelector("#dash1"), options);
-	//   chart.render();
-
-	/*
 	
-		Uninsured
-	
-	*/ 
-	var options = {
-		series: [Math.round(properties.Uninsured_per)],
-		chart: {
-			height: 150,
-			width: 100,
-			type: 'radialBar',
-			animations: {
-				enabled: false,
-			}
-	  	},
-		plotOptions: {
-			radialBar: {
-				hollow: {
-					size: '60%',
-				},
-				dataLabels: {
-					show: true,
-					name: {
-						show: true,
-						color: '#888',
-						fontSize: '12px'
-					},
-				},
-			},
-		},
+	// let percent_poverty = parseInt(properties.B17021_002E) / parseInt(properties.B17021_001E) * 100
 
-		labels: ['Uninsured'],
-	  };
-	//   var chart = new ApexCharts(document.querySelector("#dash2"), options);
-	//   chart.render();
-
-
-	/*
-	
-		English
-	
-	*/ 
-	var options = {
-		series: [Math.round(properties.Limited_Eng_per)],
-		chart: {
-			height: 150,
-			type: 'radialBar',
-			animations: {
-				enabled: false,
-			}
-	  	},
-		plotOptions: {
-			radialBar: {
-				hollow: {
-					size: '60%',
-				},
-				dataLabels: {
-					show: true,
-					name: {
-						show: true,
-						color: '#888',
-						fontSize: '12px'
-					},
-				},
-			},
-		},
-
-		labels: ['Limited English'],
-	};
-
-	// var chart = new ApexCharts(document.querySelector("#dash3"), options);
-	// chart.render();
-
-
-	/*
-	
-		poverty
-	
-	*/ 
-	var series = [Math.round(properties.Poverty_per),100-Math.round(properties.Poverty_per)]
+	var series = [Math.round(percent_poverty),100-Math.round(percent_poverty)]
 	var labels = ['Below poverty level', 'Above poverty level']
 	var wafflevalues = {};
 	wafflevalues.title = 'Poverty';
@@ -456,7 +437,7 @@ function createChart(properties){
 		uninsured
 	
 	*/ 
-	var series = [Math.round(properties.Uninsured_per),100-Math.round(properties.Uninsured_per)]
+	var series = [Math.round(Uninsured_per),100-Math.round(Uninsured_per)]
 	var labels = ['Uninsured', 'Insured']
 	var wafflevalues = {};
 	wafflevalues.title = 'Uninsured';
@@ -469,7 +450,7 @@ function createChart(properties){
 		English
 	
 	*/ 
-	var series = [Math.round(properties.Limited_Eng_per),100-Math.round(properties.Limited_Eng_per)]
+	var series = [Math.round(Limited_Eng_per),100-Math.round(Limited_Eng_per)]
 	var labels = ['Limited English', 'Not Limited']
 	var wafflevalues = {};
 	wafflevalues.title = 'English';
@@ -484,11 +465,11 @@ function createChart(properties){
 	
 	*/ 
 	var series = [
-		Math.round(properties.Hisp_per),
-		Math.round(properties.NonHisp_white_per),
-		Math.round(properties.NonHisp_black_per),
-		Math.round(properties.NonHisp_asian_per),
-		100-Math.round(properties.Hisp_per)-Math.round(properties.NonHisp_white_per)-Math.round(properties.NonHisp_black_per)-Math.round(properties.NonHisp_asian_per)
+		Math.round(Hisp_per),
+		Math.round(NonHisp_white_per),
+		Math.round(NonHisp_black_per),
+		Math.round(NonHisp_asian_per),
+		100-Math.round(Hisp_per)-Math.round(NonHisp_white_per)-Math.round(NonHisp_black_per)-Math.round(NonHisp_asian_per)
 	]
 	var labels = [
 		'Hispanic',
@@ -498,166 +479,12 @@ function createChart(properties){
 		'Other'
 	]
 
-
 	// race waffle
 	var wafflevalues = {};
 	wafflevalues.title = 'Race';
 	wafflevalues.data = series
 	wafflevalues.labels = labels
 	$('#dash4').append('<div class="col-sm" style="text-align:center">'+createWaffleChart(wafflevalues)+'</div>');
-
-
-	// var options = {
-	// 		series: [{
-	// 		data: series
-	// 	}],
-	// 	chart: {
-	// 		type: 'bar',
-	// 		height: 160,
-	// 		animations: {
-	// 			enabled: false,
-	// 		}
-	// 	},
-	// 	plotOptions: {
-	// 		bar: {
-	// 		borderRadius: 4,
-	// 		horizontal: true,
-	// 		}
-	// 	},
-	// 	dataLabels: {
-	// 		enabled: true,
-	// 		textAnchor: 'start',
-	// 		style: {
-	// 			fontSize: '10px',
-	// 			colors: ['#222']
-	// 		},
-	// 	},
-	// 	xaxis: {
-	// 		categories: labels,
-	// 	}
-	// };
-
-	// var chart = new ApexCharts(document.querySelector(".dashboard"), options);
-	// chart.render();
-
-
-	// rankings
-	
-	$('#undermap').empty()
-
-	// sparkline_data = [];
-	// geojson_data_tracts.features.forEach(function(item){
-	// 	sparkline_data.push(parseFloat(item.properties[chs.mapOptions.field]))
-
-	// })
-	//  sparkline_data = sparkline_data.filter(function (value) {
-	// 	return !Number.isNaN(value);
-	// });
-	// sparkline_data.sort((a,b) => a-b)
-
-	// index = sparkline_data.findIndex(item => item === parseFloat(properties[chs.mapOptions.field]));
-	// // index = sparkline_data.findIndex(item => item === 8.85188431200701);
-
-	// console.log('index is ' + index)
-	// console.log(properties[chs.mapOptions.field])
-	// var options5 = {
-	// 		series: [{
-	// 		data: sparkline_data
-	// 	}],
-	// 	chart: {
-	// 		type: 'bar',
-	// 		width: '100%',
-	// 		height: 100,
-	// 		sparkline: {
-	// 			enabled: true
-	// 		},
-	// 		animations: {
-	// 			enabled: false,
-	// 		}
-	// 	},
-	// 	// plotOptions: {
-	// 	// 	bar: {
-	// 	// 	columnWidth: '80%'
-	// 	// 	}
-	// 	// },
-	// 	// //   labels: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-	// 	// xaxis: {
-	// 	// 	crosshairs: {
-	// 	// 		width: 1
-	// 	// 	},
-	// 	// },
-	// 	tooltip: {
-	// 		fixed: {
-	// 			enabled: false
-	// 		},
-	// 		x: {
-	// 			show: false
-	// 		},
-	// 		y: {
-	// 		title: {
-	// 			formatter: function (seriesName) {
-	// 			return ''
-	// 			}
-	// 		}
-	// 		},
-	// 		marker: {
-	// 			show: false
-	// 		}
-	// 	},
-	// 	annotations: {
-	// 		xaxis: [
-	// 		  {
-	// 			x: index,
-	// 			borderColor: '#775DD0',
-	// 			label: {
-	// 			  style: {
-	// 				color: '#bbb',
-	// 			  },
-	// 			  text: 'here'
-	// 			}
-	// 		  }
-	// 		]
-	// 	  }
-	//   };
-
-	//   var chart5 = new ApexCharts(document.querySelector("#undermap"), options5);
-	//   chart5.render();
-
-
-	// var trace = {
-	// 	x: x,
-	// 	type: 'histogram',
-	// 	xbins: {
-	// 		start: brew.breaks[0],
-	// 		size:(brew.breaks[brew.breaks.length-1]-brew.breaks[0])/num_classes,
-	// 		end: brew.breaks[brew.breaks.length-1]
-	// 	},
-	// 	marker:{
-	// 		color: ["rgb(241,238,246)", "rgb(215,181,216)", "rgb(223,101,176)", "rgb(221,28,119)", "rgb(152,0,67)"]
-	// 	}
-	//   };
-	// //   trace.marker.color = trace.x.map(function (v) {
-	// // 	//   console.log(v)
-	// // 	return v === 10 ? 'red' : 'blue'
-	// //   });
-	// var data = [trace];
-	// var layout = {
-	// 	autosize: true,
-	// 	// width: ,
-	// 	height: 150,
-	// 	margin: {
-	// 	  l: 50,
-	// 	  r: 50,
-	// 	  b: 40,
-	// 	  t: 20,
-	// 	  pad: 4
-	// 	},
-	// 	xaxis: {title: chs.mapOptions.field}, 
-	// 	bargap: 0.05, 
-	//   };
-	//   	Plotly.newPlot('undermap', data,layout);
-	
-
 
 }
 

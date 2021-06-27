@@ -52,6 +52,7 @@ chs.mapLayers = {
 	hilo_markers: L.featureGroup(),
 	highlighted: L.featureGroup(),
 	highlighted_layer: '',
+	selected_geoids: [],
 	hiIcon: 		L.icon({
 						iconUrl: 'images/hi.png',
 					

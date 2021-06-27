@@ -3,14 +3,18 @@
 	Feature actions
 
 ***************************** */ 
+let hover = true;
+
 // Function that defines what will happen on user interactions with each feature
 function onEachFeature(feature, layer) {
+
 	layer.on({
 		mouseover: highlightFeature,
 		mouseout: resetHighlight,
 		// click: zoomToFeature
 		click: selectFeature
 	});
+
 }
 
 /* **************************** 
@@ -20,19 +24,21 @@ function onEachFeature(feature, layer) {
 ***************************** */ 
 function highlightFeature(e) {
 	var layer = e.target;
-
+	
 	// style to use on mouse over
 	layer.setStyle({
 		weight: 2,
 		color: 'red',
 		// fillOpacity: 0.6
 	});
-
+	
 	if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
 		layer.bringToFront();
 	}
-
-	createChart(layer.feature.properties)
+	
+	if(hover){
+		createChart([layer.feature.properties.GEOID])
+	}
 }
 
 /* **************************** 
@@ -41,10 +47,16 @@ function highlightFeature(e) {
 
 ***************************** */ 
 function resetHighlight(e) {
-	$('#charts').empty();
-	chs.mapLayers.baselayer.resetStyle(e.target);
-}
+	if(hover){
+		$('#charts').empty();
+		chs.mapLayers.baselayer.resetStyle(e.target);
+	}
+	else{
+		chs.mapLayers.baselayer.resetStyle(e.target);
+	}
 
+	// }
+}
 
 /* **************************** 
 
@@ -52,7 +64,6 @@ function resetHighlight(e) {
 
 ***************************** */ 
 function zoomToFeature(e) {
-	console.log(e)
 	chs.map.fitBounds(e.target.getBounds());
 }
 
@@ -63,29 +74,63 @@ function zoomToFeature(e) {
 
 ***************************** */ 
 function selectFeature(e){
+	/*
+	
+		when feature is selected, turn hover action off
+	
+	*/ 
+	hover = false;
+
 	var layer = e.target;
 
-	let properties = e.target.feature.properties;
-	console.log(properties)
+	// this is the selected feature
+	let properties = e.target.feature.properties;	
+
+	let this_geoid = properties.GEOID;
+
+	/*
 	
+		add selected geoid's into an array
 	
-	highlight=chs.mapLayers.highlighted_layer.getLayers().filter(item => item.feature.properties.GEOID === properties.GEOID)[0];
+	*/ 
+	// var chs.mapLayers.selected_geoids = []
+	chs.mapLayers.highlighted.getLayers().forEach(function(item){
+	})
 	
-	console.log(highlight)
-	chs.mapLayers.highlighted.addLayer(highlight)
+	highlight=chs.mapLayers.highlighted_layer.getLayers().filter(item => item.feature.properties.GEOID === this_geoid)[0];
 	
-	chs.map.fitBounds(chs.mapLayers.highlighted.getBounds())
-	// style to use on mouse over
-	chs.mapLayers.highlighted.setStyle({
-		weight: 4,
-		color: '#6A3D9A',
-		pane: 'boundaries',
-		fill: false
-	});
-	chs.mapLayers.highlighted.bringToFront();
-	chs.mapLayers.highlighted.addTo(chs.map)
+	if(chs.mapLayers.selected_geoids.indexOf(this_geoid)>-1){
+		console.log('this feature is already selected...')
+		chs.mapLayers.highlighted.removeLayer(highlight)
+		chs.mapLayers.selected_geoids.splice(chs.mapLayers.selected_geoids.indexOf(this_geoid),1)
+	}
+	else{
+		console.log('adding this feature...')
+		chs.mapLayers.selected_geoids.push(this_geoid)
+			
+		chs.mapLayers.highlighted.addLayer(highlight)
+		
+		chs.map.fitBounds(chs.mapLayers.highlighted.getBounds())
+		// style to use on mouse over
+		chs.mapLayers.highlighted.setStyle({
+			weight: 4,
+			color: '#6A3D9A',
+			pane: 'boundaries',
+			fill: false
+		});
+		chs.mapLayers.highlighted.bringToFront();
+		chs.mapLayers.highlighted.addTo(chs.map)
+	}
+	
 	chs.panels.info.update(layer.feature.properties)
 
+
+	/*
+	
+		create charts
+	
+	*/ 
+	createChart(chs.mapLayers.selected_geoids)
 }
 
 function zoomToFIPS(fips){
@@ -117,7 +162,7 @@ function zoomToFIPS(fips){
 	// find the data for this fips
 	properties = chs.mapLayers.baselayer.getLayers().filter(item => item.feature.properties.GEOID === fips)[0].feature.properties
 
-	createChart(properties)
+	createChart([properties.GEOID])
 	
 }
 
