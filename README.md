@@ -4,6 +4,13 @@ https://yohman.github.io/chs-mapping/web/
 
 ## Change log
 
+### 2021-06-27
+Select multiple features and see summarized demographics
+- click on mulitple features
+- click on a selected feature removes it
+
+<img src="logs/2021-06-27 multiple feature select.png">
+
 ### 2021-06-25
 Print feature
 <img src="logs/2021-06-25 print1.png">
