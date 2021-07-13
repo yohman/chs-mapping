@@ -106,8 +106,55 @@ vars1 <- c("B16004_001",#population (age 5+) for ability to speak english
            "B03002_004",#Black
            "B03002_003",#Non-Hispanic White
            "B03002_012",#Hispanic or Latino 
-           "B03002_005"#American Indian and Alaska Native
-           )
+           "B03002_005",#American Indian and Alaska Native
+           "B01001_002",#male
+           "B01001_003",#male5
+           "B01001_004",#male5-9
+           "B01001_005",#male10-14
+           "B01001_006",#male15-17
+           "B01001_007",#male18-19
+           "B01001_008",#male20
+           "B01001_009",#male21
+           "B01001_010",#male22-24
+           "B01001_011",#male25-29
+           "B01001_012",#male30-34
+           "B01001_013",#male35-39
+           "B01001_014",#male40-44
+           "B01001_015",#male45-49
+           "B01001_016",#male50-54
+           "B01001_017",#male55-59
+           "B01001_018",#male60-61
+           "B01001_019",#male62-64
+           "B01001_020",#male65-66
+           "B01001_021",#male67-69
+           "B01001_022",#male70-74
+           "B01001_023",#male75-79
+           "B01001_024",#male80-84
+           "B01001_025",#male85
+           "B01001_026",#female
+           "B01001_027",#female5
+           "B01001_028",#female5-9
+           "B01001_029",#female10-14
+           "B01001_030",#female15-17
+           "B01001_031",#female18-19
+           "B01001_032",#female20
+           "B01001_033",#female21
+           "B01001_034",#female22-24
+           "B01001_035",#female25-29
+           "B01001_036",#female30-34
+           "B01001_037",#female35-39
+           "B01001_038",#female40-44
+           "B01001_039",#female45-49
+           "B01001_040",#female50-54
+           "B01001_041",#female55-59
+           "B01001_042",#female60-61
+           "B01001_043",#female62-64
+           "B01001_044",#female65-66
+           "B01001_045",#female67-69
+           "B01001_046",#female70-74
+           "B01001_047",#female75-79
+           "B01001_048",#female80-84
+           "B01001_049")#female85
 
 vars_acs_bg <- get_acs(geography = "block group",
                        variables = vars1,
@@ -134,7 +181,27 @@ vars_acs_bg <- get_acs(geography = "block group",
                       NonHisp_black_per = B03002_004E/B03002_001E * 100,
                       NonHisp_white_per = B03002_003E/B03002_001E * 100,
                       Hisp_per = B03002_012E/B03002_001E * 100,
-                      NonHisp_ai_per = B03002_005E/B03002_001E * 100
+                      NonHisp_ai_per = B03002_005E/B03002_001E * 100,
+                      Male_per = B01001_002E/B03002_001E * 100,
+                      Female_per = B01001_026E/B03002_001E * 100,
+                      Age_5under_per = (B01001_003E + B01001_027E)/B03002_001E * 100,
+                      Age_5to14_per = (B01001_004E + B01001_005E  + 
+                                       B01001_028E + B01001_029E)/B03002_001E * 100,
+                      Age_15to17_per = (B01001_006E + B01001_030E)/B03002_001E * 100,
+                      Age_18to20_per = (B01001_007E + B01001_008E + 
+                                        B01001_031E + B01001_032E)/B03002_001E * 100,
+                      Age_21to64_per = (B01001_009E + B01001_010E + B01001_011E +
+                                        B01001_012E + B01001_013E + B01001_014E +
+                                        B01001_015E + B01001_016E + B01001_017E +
+                                        B01001_018E + B01001_019E + B01001_033E +
+                                        B01001_034E + B01001_035E + B01001_036E +
+                                        B01001_037E + B01001_038E + B01001_039E +
+                                        B01001_040E + B01001_041E + B01001_042E +
+                                        B01001_043E)/B03002_001E * 100,
+                      Age_65above_per = (B01001_020E + B01001_021E + B01001_022E +
+                                         B01001_023E + B01001_024E + B01001_025E +
+                                         B01001_044E + B01001_045E + B01001_046E +
+                                         B01001_047E + B01001_048E + B01001_049E)/B03002_001E * 100
                ) %>% 
                rename(Pop_total = B03002_001E) %>% 
                select(GEOID, 
@@ -147,9 +214,30 @@ vars_acs_bg <- get_acs(geography = "block group",
                       NonHisp_black_per,
                       NonHisp_white_per,
                       Hisp_per,
-                      NonHisp_ai_per)
+                      NonHisp_ai_per,
+                      Male_per,
+                      Female_per,
+                      Age_5under_per,
+                      Age_5to14_per,
+                      Age_15to17_per,
+                      Age_18to20_per,
+                      Age_21to64_per,
+                      Age_65above_per
+                      )
 
-write.csv(vars_acs_bg, "./acs_vars_blockgroups.csv")
+write.csv(vars_acs_bg, "./web/data/bg_results/acs_vars_blockgroups_new.csv", row.names=FALSE)
+
+#block group level - raw data
+acs_bg_raw <- get_acs(geography = "block group",
+                       variables = vars1,
+                       state = "CA",
+                       county = "Los Angeles County",
+                       year = 2019,
+                       output = "wide") %>%
+              select(-NAME)
+
+write.csv(acs_bg_raw, "./web/data/bg_results/acs_blockgroups.csv", row.names=FALSE)
+
 
 #get boundary shapefiles from census.gov
 bg_source <- "https://www2.census.gov/geo/tiger/GENZ2019/shp/cb_2019_06_bg_500k.zip"
@@ -168,7 +256,7 @@ if (file.exists(bg_path) == FALSE) {
 bg_lacounty <- st_read(bg_path) %>% 
                st_transform(4326) %>% 
                filter(COUNTYFP == "037") %>% 
-               select(GEOID)
+               select(GEOID, ALAND)
 
 st_write(bg_lacounty, "./web/data/boundary files/bg.geojson")
 #topojson_write(bg_lacounty, "./web/data/boundary files/bg.topojson")
