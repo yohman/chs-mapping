@@ -4,6 +4,13 @@ https://yohman.github.io/chs-mapping/web/
 
 ## Change log
 
+### 2021-07-15
+
+- Gender and age added to profile panel
+- Added toggle button for left panel
+
+<img src="logs/2021-07-15 gender age toggle.png">
+
 ### 2021-06-27
 Select multiple features and see summarized demographics
 - click on mulitple features

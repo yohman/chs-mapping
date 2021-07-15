@@ -105,6 +105,7 @@ $( document ).ready(function() {
 			createSidebar();
 			createInfoPanel();
 			$('#toggler').show();
+			$('#toggler2').show();
 		}
 	)
 }

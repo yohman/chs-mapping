@@ -192,8 +192,12 @@ function createCategoricalLegend(){
 		
 		*/ 
 		chs.mapOptions.category_array.forEach(function(item,index){
+			
 			html += `<tr><td><i style="margin-left:20px;background:${cat_colors[index]}"></i></td>
 			<td><span style="font-size:0.8em;">${item}</span></td></tr>`
+			// toggle version for later implementation
+			// html += `<tr><td><i style="margin-left:20px;background:${cat_colors[index]}"></i></td><td><i id="hi-toggle" onclick="toggleMaxGeos()" class="fa fa-toggle-on" aria-hidden="true" style="font-size:1.3em"></i></td>
+			// <td><span style="font-size:0.8em;">${item}</span></td></tr>`
 		})
 
 		// div.innerHTML = html;
@@ -317,6 +321,18 @@ function createChart(GEOIDs){
 	let people_NonHisp_asian = 0;
 	let total_pop_race = 0;
 
+	let people_male = 0;
+	let people_female = 0;
+	let total_pop_gender = 0;
+
+	let people_age_5under = 0;
+	let people_age_5to14 = 0;
+	let people_age_15to17 = 0;
+	let people_age_18to20 = 0;
+	let people_age_21to64 = 0;
+	let people_age_65above = 0;
+	let total_pop_age = 0;
+
 	let blockcodes = [];
 
 	let Pop_total = 0;
@@ -334,12 +350,27 @@ function createChart(GEOIDs){
 
 		blockcodes.push(properties.Block_Code)
 
+		/*
+		
+			poverty
+		
+		*/ 
 		people_in_poverty += parseInt(properties.B17021_002E)
 		total_pop_poverty += parseInt(properties.B17021_001E)
 		
+		/*
+		
+			insured
+		
+		*/ 
 		people_uninsured += parseInt(properties.B27010_017E)+parseInt(properties.B27010_033E)+parseInt(properties.B27010_050E)+parseInt(properties.B27010_066E)
 		total_pop_uninsured += parseInt(properties.B27010_001E)
 
+		/*
+		
+			english
+		
+		*/ 
 		people_english += parseInt(properties.B16004_007E) + parseInt(properties.B16004_008E) +
 			parseInt(properties.B16004_012E) + parseInt(properties.B16004_013E) +
 			parseInt(properties.B16004_017E) + parseInt(properties.B16004_018E) +
@@ -354,13 +385,40 @@ function createChart(GEOIDs){
 			parseInt(properties.B16004_066E) + parseInt(properties.B16004_067E)
 		total_pop_english += parseInt(properties.B16004_001E)
 
+		/*
+		
+			race
+		
+		*/ 
 		people_hisp += parseInt(properties.B03002_012E);
 		people_NonHisp_black += parseInt(properties.B03002_004E);
 		people_NonHisp_white += parseInt(properties.B03002_003E);
 		people_NonHisp_asian += parseInt(properties.B03002_006E);
-		total_pop_race += parseInt(properties.B03002_001E)
+		total_pop_race += parseInt(properties.B03002_001E);
+
+		/*
+		
+			gender
+		
+		*/ 
+		people_male += parseInt(properties.B01001_002E);
+		people_female += parseInt(properties.B01001_026E);
+		total_pop_gender += parseInt(properties.B03002_001E);
+
+		/*
+		
+			age
+		
+		*/ 
+		people_age_5under += parseInt(properties.B01001_003E) + parseInt(properties.B01001_027E)
+		people_age_5to14 += parseInt(properties.B01001_004E) + parseInt(properties.B01001_005E) + parseInt(properties.B01001_028E) + parseInt(properties.B01001_029E)
+		people_age_15to17 += parseInt(properties.B01001_006E) + parseInt(properties.B01001_030E)
+		people_age_18to20 += parseInt(properties.B01001_007E) + parseInt(properties.B01001_008E) + parseInt(properties.B01001_031E) + parseInt(properties.B01001_032E)
+		people_age_21to64 += parseInt(properties.B01001_009E) + parseInt(properties.B01001_010E) + parseInt(properties.B01001_011E) + parseInt(properties.B01001_012E) + parseInt(properties.B01001_013E) + parseInt(properties.B01001_014E) + parseInt(properties.B01001_015E) + parseInt(properties.B01001_016E) + parseInt(properties.B01001_017E) + parseInt(properties.B01001_018E) + parseInt(properties.B01001_019E) + parseInt(properties.B01001_033E) + parseInt(properties.B01001_034E) + parseInt(properties.B01001_035E) + parseInt(properties.B01001_036E) + parseInt(properties.B01001_037E) + parseInt(properties.B01001_038E) + parseInt(properties.B01001_039E) + parseInt(properties.B01001_040E) + parseInt(properties.B01001_041E) + parseInt(properties.B01001_042E) + parseInt(properties.B01001_043E)
+		people_age_65above += parseInt(properties.B01001_020E) + parseInt(properties.B01001_021E) + parseInt(properties.B01001_022E) + parseInt(properties.B01001_023E) + parseInt(properties.B01001_024E) + parseInt(properties.B01001_025E) + parseInt(properties.B01001_044E) + parseInt(properties.B01001_045E) + parseInt(properties.B01001_046E) + parseInt(properties.B01001_047E) + parseInt(properties.B01001_048E) + parseInt(properties.B01001_049E)
+		total_pop_age += parseInt(properties.B03002_001E)
 	})
-	
+
 	/*
 	
 		calculate the percent of total
@@ -375,6 +433,15 @@ function createChart(GEOIDs){
 	let NonHisp_white_per = people_NonHisp_white/total_pop_race * 100;
 	let NonHisp_asian_per = people_NonHisp_asian/total_pop_race * 100;
 
+	let Male_per = people_male/total_pop_gender * 100;
+	let Female_per = people_female/total_pop_gender * 100;
+
+	let age_5under_per = people_age_5under/total_pop_age * 100; 
+	let age_5to14_per = people_age_5to14/total_pop_age * 100; 
+	let age_15to17_per = people_age_15to17/total_pop_age * 100; 
+	let age_18to20_per = people_age_18to20/total_pop_age * 100; 
+	let age_21to64_per = people_age_21to64/total_pop_age * 100; 
+	let age_65above_per = people_age_65above/total_pop_age * 100; 
 	/*
 	
 		show difference if block code exists
@@ -411,8 +478,9 @@ function createChart(GEOIDs){
 		<div style="font-size:0.8em;color:#666">Total population: ${Pop_total}</div>
 	</div>
 	<table width="100%">
-	<tr><td width="50%" id="dash1"></td><td width="50%" id="dash2"></td></tr>
-	<tr><td width="50%" id="dash3"></td><td width="50%" id="dash4"></td></tr>
+	<tr><td width="33%" id="dash1"></td><td width="33%" id="dash2"></td><td width="33%" id="dash3"></td></tr>
+	<tr><td width="33%" id="dash4"></td><td width="33%" id="dash5"></td><td width="33%" id="dash6"></td></tr>
+	
 	</table>
 	`);
 
@@ -458,6 +526,19 @@ function createChart(GEOIDs){
 	wafflevalues.labels = labels
 	$('#dash3').html('<div class="col-sm" style="text-align:center">'+createWaffleChart(wafflevalues)+'</div>');
 
+	/*
+	
+		Gender
+	
+	*/ 
+	var series = [Math.round(Male_per),Math.round(Female_per)]
+	var labels = ['Male', 'Female']
+	var wafflevalues = {};
+	wafflevalues.title = 'Gender';
+	wafflevalues.data = series
+	wafflevalues.labels = labels
+	$('#dash5').html('<div class="col-sm" style="text-align:center">'+createWaffleChart(wafflevalues)+'</div>');
+
 
 	/*
 	
@@ -485,6 +566,34 @@ function createChart(GEOIDs){
 	wafflevalues.data = series
 	wafflevalues.labels = labels
 	$('#dash4').append('<div class="col-sm" style="text-align:center">'+createWaffleChart(wafflevalues)+'</div>');
+	/*
+	
+		age
+	
+	*/ 
+	var series = [
+		Math.round(age_5under_per),
+		Math.round(age_5to14_per),
+		Math.round(age_15to17_per),
+		Math.round(age_18to20_per),
+		Math.round(age_21to64_per),
+		Math.round(age_65above_per),
+	]
+	var labels = [
+		'under 5',
+		'5 to 14',
+		'15 to 17',
+		'18 to 20',
+		'21 to 64',
+		'above 65'
+	]
+	console.log(series)
+	// race waffle
+	var wafflevalues = {};
+	wafflevalues.title = 'Age';
+	wafflevalues.data = series
+	wafflevalues.labels = labels
+	$('#dash6').append('<div class="col-sm" style="text-align:center">'+createWaffleChart(wafflevalues)+'</div>');
 
 }
 
@@ -563,8 +672,36 @@ function toggleDashboard(){
 	else
 	{
 		$('#charts').show()
-		$('body').css('grid-template-columns','300px 1fr 300px')
+		$('body').css('grid-template-columns','300px 1fr 400px')
 		chs.map.invalidateSize()
 		chs.panels.hideDashboard = true;
+	}
+}
+
+function toggleTOC(){
+
+	// check dashboard toggle
+	if(chs.panels.hideDashboard){
+		dashboard_width = '400px';
+	}
+	else{
+		dashboard_width = '1px';
+	}
+
+	if(chs.panels.hideTOC){
+		
+		$('#sidebar').hide()
+		$('#legend').hide()
+		$('body').css('grid-template-columns',`1px 1fr ${dashboard_width}`)
+		chs.map.invalidateSize()
+		chs.panels.hideTOC = false;
+	}
+	else
+	{
+		$('#sidebar').show()
+		$('#legend').show()
+		$('body').css('grid-template-columns',`300px 1fr ${dashboard_width}`)
+		chs.map.invalidateSize()
+		chs.panels.hideTOC = true;
 	}
 }

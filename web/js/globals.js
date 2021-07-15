@@ -28,6 +28,7 @@ chs.mapOptions = {
 	field:          'total_pop',
 	category_field:	'',
 	category_array:	[],
+	category_on_array:	[], // another array to list only categories that are turned on
 	scheme:         'quantiles',
 	brew: 	 		new classyBrew(),
 	choroplethColors: '',
@@ -78,6 +79,7 @@ chs.mapLayers = {
 chs.panels = {
 	info: L.control({ position: 'bottomleft' }),
 	hideDashboard: true,
+	hideTOC: true,
 	list_block_codes: [],
 	list_agencies: [],
 }
@@ -168,12 +170,12 @@ chs.data = {
 			id: 'Current_Agency',
 			type: 'categorical'
 		},
-		{
-			geography: 'bg',
-			text: 'Priority Decile',
-			id: 'Priority_Decile',
-			type: 'categorical'
-		},
+		// {
+		// 	geography: 'bg',
+		// 	text: 'Priority Decile',
+		// 	id: 'Priority_Decile',
+		// 	type: 'categorical'
+		// },
 		// {
 		// 	geography: 'bg',
 		// 	text: 'CSA Name',
@@ -266,5 +268,13 @@ chs.data = {
 			type: 'choropleth',
 			percent: false,
 		},
+		{
+			geography: 'bg',
+			text: 'Priority Decile',
+			id: 'Priority_Decile',
+			type: 'choropleth',
+			percent: false
+		},
+
 	],
 }
