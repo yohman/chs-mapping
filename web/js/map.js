@@ -155,7 +155,7 @@ function createMap(){
 		tileSize: 512,
 		zoomOffset: -1,
 		accessToken: 'pk.eyJ1IjoieW9obWFuIiwiYSI6IkxuRThfNFkifQ.u2xRJMiChx914U7mOZMiZw'
-	}).addTo(chs.map);
+	})
 
 	/*
 	
@@ -165,7 +165,35 @@ function createMap(){
 	let positronLabels = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png', {
 		// attribution: cartodbAttribution,
 		pane: 'labels'
-	}).addTo(chs.map);
+	})
+	
+	/*
+	
+		satellite color with poi
+	
+	*/ 
+	let satellitecolor = L.tileLayer('https://api.mapbox.com/styles/v1/yohman/ckrh25hug05w018ndot6lycob/tiles/512/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoieW9obWFuIiwiYSI6IkxuRThfNFkifQ.u2xRJMiChx914U7mOZMiZw', 
+	{
+		attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox/yohman</a>',
+		maxZoom: 18,
+		tileSize: 512,
+		zoomOffset: -1,
+		accessToken: 'pk.eyJ1IjoieW9obWFuIiwiYSI6IkxuRThfNFkifQ.u2xRJMiChx914U7mOZMiZw'
+	});
+
+	
+	/*
+	
+		layer control
+	
+	*/ 
+	let satelliteGroup = L.layerGroup([satellite,positronLabels]).addTo(chs.map);
+	let satelliteColorGroup = L.layerGroup([satellitecolor,positronLabels]);
+	let baseMaps = {
+		"Satellite (black and white)": satelliteGroup,
+		"Satellite (color)": satelliteColorGroup
+	}
+	L.control.layers(baseMaps).addTo(chs.map);
 	
 	/*
 	
@@ -199,9 +227,20 @@ function createMap(){
 	}).addTo(chs.map);
 
 	geocoder.on('markgeocode', function(event) {
-		console.log(event)
+		/*
+		
+			remove the pin if it exists
+		
+		*/ 
+		if(chs.mapLayers.geocodepin){chs.mapLayers.geocodepin.remove()}
+
+		/*
+		
+			geocode and add a pin (marker)
+		
+		*/ 
 		var center = event.geocode.center;
-		// L.marker(center).addTo(chs.map);
+		chs.mapLayers.geocodepin = L.marker(center).addTo(chs.map);
 		chs.map.setView(center, 15);
    	});
 

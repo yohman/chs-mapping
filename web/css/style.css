@@ -216,7 +216,7 @@ hr {
 	
     position: absolute;
     margin-left: -38px;
-    margin-top: 25px;
+    margin-top: 70px;
     font-size: 1.4em;
     z-index: 9999;
     background-color: #fff;
@@ -259,4 +259,9 @@ hr {
 
 .pages-print-container [leaflet-browser-print-pages-hide] {
 	display: none;
+}
+
+.leaflet-popup-pane, .leaflet-control {
+    cursor: auto;
+    text-align: left;
 }

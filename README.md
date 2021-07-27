@@ -4,6 +4,14 @@ https://yohman.github.io/chs-mapping/web/
 
 ## Change log
 
+### 2021-07-26
+
+- A marker pin is added after location search
+- POI labels added, visible when you zoom in
+- Option to change basemap to colored satellite
+
+<img src="logs/2021-07-26 search pin.png">
+
 ### 2021-07-15
 
 - Gender and age added to profile panel

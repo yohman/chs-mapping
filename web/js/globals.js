@@ -54,6 +54,7 @@ chs.mapLayers = {
 	highlighted: L.featureGroup(),
 	highlighted_layer: '',
 	selected_geoids: [],
+	geocodepin: undefined,
 	hiIcon: 		L.icon({
 						iconUrl: 'images/hi.png',
 					
