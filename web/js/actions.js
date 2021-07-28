@@ -100,12 +100,10 @@ function selectFeature(e){
 	highlight=chs.mapLayers.highlighted_layer.getLayers().filter(item => item.feature.properties.GEOID === this_geoid)[0];
 	
 	if(chs.mapLayers.selected_geoids.indexOf(this_geoid)>-1){
-		console.log('this feature is already selected...')
 		chs.mapLayers.highlighted.removeLayer(highlight)
 		chs.mapLayers.selected_geoids.splice(chs.mapLayers.selected_geoids.indexOf(this_geoid),1)
 	}
 	else{
-		console.log('adding this feature...')
 		chs.mapLayers.selected_geoids.push(this_geoid)
 			
 		chs.mapLayers.highlighted.addLayer(highlight)
