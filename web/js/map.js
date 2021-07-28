@@ -322,7 +322,6 @@ function addChoroplethLayer(args){
 		
 		// based on the provided field, enter each value into the array
 		chs.mapLayers.baselayer.getLayers().forEach(function(item,index){
-			// console.log(item.feature.properties[field])
 			//only add if it's a number
 			if(!isNaN(item.feature.properties[chs.mapOptions.field])){
 				values.push(parseFloat(item.feature.properties[chs.mapOptions.field]))
@@ -484,12 +483,10 @@ function addCategoricalLayer(field){
 		createCategoricalLegend();
 	
 	}
-	console.log(field)
 
 }
 
 function getCategoryStyle(feature){
-	// console.log(feature)
 	let index = chs.mapOptions.category_array.indexOf(feature.properties[chs.mapOptions.category_field])
 	// let cat = parseInt(feature.properties.Priority_Decile)
 	return {
@@ -554,7 +551,6 @@ function addBoundaryLayer(id_text){
 				chs.mapLayers.boundary = L.geoJson(data,boundary_options).addTo(chs.map)
 			}
 			else{
-				console.log('this is a topojson layer')
 				chs.mapLayers.boundary = L.topoJson(data,boundary_options).addTo(chs.map)
 			}
 		})
@@ -743,7 +739,6 @@ function getRandomPalette(){
 	// let pal = chs.mapOptions.brew.getColorCodesByType().seq
 	let pal = ["OrRd", "PuBu", "BuPu", "Oranges", "BuGn", "YlOrBr", "YlGn", "Reds", "RdPu", "Greens", "YlGnBu", "Purples", "GnBu", "YlOrRd", "PuRd", "Blues", "PuBuGn","Spectral", "RdYlGn", "RdBu", "PiYG", "PRGn", "RdYlBu", "BrBG", "RdGy", "PuOr"]	
 	let random_num = Math.floor(Math.random() * pal.length+1)
-	console.log(pal[random_num])
 	return(pal[random_num])
 }
 

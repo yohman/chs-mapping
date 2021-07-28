@@ -133,7 +133,6 @@ function createInfoPanel(){
 
 	// method that we will use to update the control based on feature properties passed
 	chs.panels.info.update = function (properties) {
-		console.log('infopanel updating...')
 		// let count = chs.mapLayers.highlighted.getLayers().length;
 		let count = chs.mapLayers.selected_geoids.length;
 
@@ -587,7 +586,7 @@ function createChart(GEOIDs){
 		'21 to 64',
 		'above 65'
 	]
-	console.log(series)
+
 	// race waffle
 	var wafflevalues = {};
 	wafflevalues.title = 'Age';
