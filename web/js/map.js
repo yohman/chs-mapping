@@ -392,6 +392,7 @@ function addTooltip(){
 		html += (layer.feature.properties['CSA_Name']!='') ? `${layer.feature.properties['CSA_Name']}<br>` : '';
 		html += (layer.feature.properties['Current_Agency']!='') ? `${layer.feature.properties['Current_Agency']}<br>` : '';
 		html += (layer.feature.properties['Current_Outreach']!='') ? `Outreach count: ${layer.feature.properties['Current_Outreach']}<br>` : '';
+		html += (layer.feature.properties['Current_Outreach_Date']!='') ? `Last outreach: ${layer.feature.properties['Current_Outreach_Date']}<br>` : '';
 		// html += (layer.feature.properties['CHW_commun']!='') ? `CHW: ${layer.feature.properties['CHW_commun']}<br>` : '';
 		// html += '</div>'
 

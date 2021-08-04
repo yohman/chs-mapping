@@ -477,10 +477,10 @@ function createChart(GEOIDs){
 		<div style="font-size:0.8em;color:#666">Total population: ${Pop_total}</div>
 	</div>
 	<table width="100%">
-	<tr><td width="33%" id="dash1"></td><td width="33%" id="dash2"></td><td width="33%" id="dash3"></td></tr>
-	<tr><td width="33%" id="dash4"></td><td width="33%" id="dash5"></td><td width="33%" id="dash6"></td></tr>
-	
+		<tr><td width="33%" id="dash1"></td><td width="33%" id="dash2"></td><td width="33%" id="dash3"></td></tr>
+		<tr><td width="33%" id="dash4"></td><td width="33%" id="dash5"></td><td width="33%" id="dash6"></td></tr>
 	</table>
+	<div style="font-size:0.8em;padding:10px;font-weight:bold;">Source: American Community Survey, 2015-2019</div>
 	`);
 
 	/*
