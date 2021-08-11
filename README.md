@@ -4,6 +4,12 @@ https://yohman.github.io/chs-mapping/web/
 
 ## Change log
 
+### 2021-08-10
+
+- Selecting an agency summarizes the data in the community profile panel and adds it to the selected block groups
+
+<img src="logs/2021-08-10 agency summary.png">
+
 ### 2021-07-26
 
 - A marker pin is added after location search
