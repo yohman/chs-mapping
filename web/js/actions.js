@@ -94,15 +94,30 @@ function selectFeature(e){
 	
 	*/ 
 	// var chs.mapLayers.selected_geoids = []
-	chs.mapLayers.highlighted.getLayers().forEach(function(item){
-	})
+	// chs.mapLayers.highlighted.getLayers().forEach(function(item){
+	// })
 	
+	/*
+	
+		put selected feature into highlight variable
+	
+	*/ 
 	highlight=chs.mapLayers.highlighted_layer.getLayers().filter(item => item.feature.properties.GEOID === this_geoid)[0];
 	
+	/*
+	
+		if feature has already been selected, de-select it
+	
+	*/ 
 	if(chs.mapLayers.selected_geoids.indexOf(this_geoid)>-1){
 		chs.mapLayers.highlighted.removeLayer(highlight)
 		chs.mapLayers.selected_geoids.splice(chs.mapLayers.selected_geoids.indexOf(this_geoid),1)
 	}
+	/*
+	
+		if feature is new, add it to the selected geoids
+	
+	*/ 
 	else{
 		chs.mapLayers.selected_geoids.push(this_geoid)
 			
@@ -166,37 +181,59 @@ function zoomToFIPS(fips){
 
 function zoomToAgency(agency){
 
+	console.log(agency)
+
 	if(chs.mapLayers.highlighted){
 		chs.mapLayers.highlighted.clearLayers()
 	}
+	clearHighlightedFeatures()
 
-	// get list of fips for this agency
-	highlight_agency_bgs=chs.mapLayers.highlighted_layer.getLayers().filter(item => item.feature.properties.Current_Agency === agency)
-
-	highlight_agency_bgs.forEach(function(item){
-		chs.mapLayers.highlighted.addLayer(item)
-	})
-	// chs.mapLayers.highlighted.addLayer(highlight)
-	chs.map.fitBounds(chs.mapLayers.highlighted.getBounds())
-
-	// style to use on mouse over
-	chs.mapLayers.highlighted.setStyle({
-		weight: 2,
-		color: '#6A3D9A',
-		pane: 'boundaries',
-		fill: false
-	});
-	chs.mapLayers.highlighted.bringToFront();
-	chs.mapLayers.highlighted.addTo(chs.map)
-
-	/*
+	if(agency)
+	{
+		hover = false;
 	
-		create chart
+		// get list of fips for this agency
+		highlight_agency_bgs=chs.mapLayers.highlighted_layer.getLayers().filter(item => item.feature.properties.Current_Agency === agency)
 	
-	*/ 
-	// find the data for this fips
-	// properties = chs.mapLayers.baselayer.getLayers().filter(item => item.feature.properties.GEOID === fips)[0].feature.properties
+		/*
+		
+			loop through each feature in agency
+		
+		*/ 
+		highlight_agency_bgs.forEach(function(item){
+			// add it to the selected geoids
+			chs.mapLayers.selected_geoids.push(item.feature.properties.GEOID)
+	
+			// highlight it
+			chs.mapLayers.highlighted.addLayer(item)
+	
+			// add it to the info panel
+			chs.panels.info.update(item.feature.properties)
+	
+		})
+		// chs.mapLayers.highlighted.addLayer(highlight)
+		chs.map.fitBounds(chs.mapLayers.highlighted.getBounds())
+	
+		// style to use on mouse over
+		chs.mapLayers.highlighted.setStyle({
+			weight: 2,
+			color: '#6A3D9A',
+			pane: 'boundaries',
+			fill: false
+		});
+		chs.mapLayers.highlighted.bringToFront();
+		chs.mapLayers.highlighted.addTo(chs.map)
+	
+		/*
+		
+			create chart
+		
+		*/ 
+		createChart(chs.mapLayers.selected_geoids)
 
-	// createChart(properties)
+	}
+	else {
+		$('#charts').empty();
+	}
 	
 }

@@ -345,7 +345,8 @@ function createChart(GEOIDs){
 
 		properties = chs.data.data.filter(item => item.GEOID === geoid)[0]
 
-		Pop_total += parseInt(properties.Pop_total)
+		// Pop_total += parseInt(properties.Pop_total)
+		Pop_total += parseInt(properties.B03002_001E)
 
 		blockcodes.push(properties.Block_Code)
 

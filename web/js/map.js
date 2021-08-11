@@ -6,6 +6,7 @@
 
 $( document ).ready(function() {
 
+	console.log('getting the data...')
 	getData();
 
 });
@@ -59,18 +60,21 @@ $( document ).ready(function() {
 		put them in a promise to load all data before moving on to the next step
 	
 	*/ 
+	console.log('start promise...')
+	var t0 = performance.now()
 	Promise.all(
 		[geojsondata,csvdata,csvdata2,googledata]
 	).then(
 		function(results){
-
+			var t1 = performance.now()
+			console.log("Call to get data took " + (t1 - t0) + " milliseconds.")
 			/*
 			
 				put the data in global variables
 			
 			*/ 
 			chs.data.bgs = results[0]
-			chs.data.csv = results[1]
+			// chs.data.csv = results[1]
 			chs.data.csv2 = results[2]
 			chs.data.google = results[3]
 
@@ -92,6 +96,8 @@ $( document ).ready(function() {
 			chs.mapLayers.highlighted_layer = L.topoJson(chs.data.bgs,{pane:'boundaries'})
 
 			joinCSV()
+			var t2 = performance.now()
+			console.log("Call to make map took " + (t2 - t1) + " milliseconds.")
 
 			createGeoidList()
 
@@ -584,9 +590,9 @@ function joinCSV(){
 		do the joins
 	
 	*/ 
-	chs.mapLayers.baselayer.eachLayer(function(layer) {
-		featureJoinByProperty(layer.feature.properties, chs.data.csv.data, "GEOID");
-	});
+	// chs.mapLayers.baselayer.eachLayer(function(layer) {
+	// 	featureJoinByProperty(layer.feature.properties, chs.data.csv.data, "GEOID");
+	// });
 	
 	chs.mapLayers.baselayer.eachLayer(function(layer) {
 		featureJoinByProperty(layer.feature.properties, chs.data.csv2.data, "GEOID");
