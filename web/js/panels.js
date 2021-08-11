@@ -166,6 +166,7 @@ function createInfoPanel(){
 
 function clearHighlightedFeatures(){
 	hover=true;
+	$('#charts').empty();
 	chs.mapLayers.selected_geoids = [];
 	chs.mapLayers.highlighted.clearLayers();
 	chs.panels.info.update()

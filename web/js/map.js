@@ -74,7 +74,7 @@ $( document ).ready(function() {
 			
 			*/ 
 			chs.data.bgs = results[0]
-			// chs.data.csv = results[1]
+			chs.data.csv = results[1]
 			chs.data.csv2 = results[2]
 			chs.data.google = results[3]
 
@@ -590,9 +590,9 @@ function joinCSV(){
 		do the joins
 	
 	*/ 
-	// chs.mapLayers.baselayer.eachLayer(function(layer) {
-	// 	featureJoinByProperty(layer.feature.properties, chs.data.csv.data, "GEOID");
-	// });
+	chs.mapLayers.baselayer.eachLayer(function(layer) {
+		featureJoinByProperty(layer.feature.properties, chs.data.csv.data, "GEOID");
+	});
 	
 	chs.mapLayers.baselayer.eachLayer(function(layer) {
 		featureJoinByProperty(layer.feature.properties, chs.data.csv2.data, "GEOID");
