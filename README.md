@@ -4,6 +4,13 @@ https://yohman.github.io/chs-mapping/web/
 
 ## Change log
 
+### 2021-08-12
+
+- Categorical layers are now toggle-able
+- Data cleaned up and optimized,loading time has been cut to half
+
+<img src="logs/2021-08-12 toggle.png">
+
 ### 2021-08-10
 
 - Selecting an agency summarizes the data in the community profile panel and adds it to the selected block groups

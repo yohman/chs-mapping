@@ -181,8 +181,6 @@ function zoomToFIPS(fips){
 
 function zoomToAgency(agency){
 
-	console.log(agency)
-
 	if(chs.mapLayers.highlighted){
 		chs.mapLayers.highlighted.clearLayers()
 	}

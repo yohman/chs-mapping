@@ -50,7 +50,7 @@ $( document ).ready(function() {
 		list of data to parse
 	
 	*/ 
-	const csvdata = parseCsv(chs.data.csv_path)
+	// const csvdata = parseCsv(chs.data.csv_path)
 	const csvdata2 = parseCsv(chs.data.csv_path2)
 	const googledata = parseCsv(chs.data.google_path)
 	const geojsondata = getGeoJson(chs.data.bgs_path)
@@ -63,7 +63,8 @@ $( document ).ready(function() {
 	console.log('start promise...')
 	var t0 = performance.now()
 	Promise.all(
-		[geojsondata,csvdata,csvdata2,googledata]
+		// [geojsondata,csvdata,csvdata2,googledata]
+		[geojsondata,csvdata2,googledata]
 	).then(
 		function(results){
 			var t1 = performance.now()
@@ -74,9 +75,9 @@ $( document ).ready(function() {
 			
 			*/ 
 			chs.data.bgs = results[0]
-			chs.data.csv = results[1]
-			chs.data.csv2 = results[2]
-			chs.data.google = results[3]
+			// chs.data.csv = results[1]
+			chs.data.csv2 = results[1]
+			chs.data.google = results[2]
 
 			/*
 			
@@ -318,7 +319,14 @@ function addChoroplethLayer(args){
 		chs.mapOptions.num_classes = args.num_classes || chs.mapOptions.num_classes;
 		chs.mapOptions.choroplethColors = args.palette || getRandomPalette();
 		chs.mapOptions.scheme = args.scheme || chs.mapOptions.scheme;
-		
+		if(chs.data.variables.filter(item => item.id === chs.mapOptions.field)[0].pop){
+			chs.mapOptions.pop = chs.data.variables.filter(item => item.id === chs.mapOptions.field)[0].pop
+		}
+		else{
+			chs.mapOptions.pop = undefined
+		}
+
+
 		/*
 		
 		brew it
@@ -330,7 +338,12 @@ function addChoroplethLayer(args){
 		chs.mapLayers.baselayer.getLayers().forEach(function(item,index){
 			//only add if it's a number
 			if(!isNaN(item.feature.properties[chs.mapOptions.field])){
-				values.push(parseFloat(item.feature.properties[chs.mapOptions.field]))
+				if(chs.mapOptions.pop){
+					values.push(parseFloat(item.feature.properties[chs.mapOptions.field]/item.feature.properties[chs.mapOptions.pop]*100))
+				}
+				else{
+					values.push(parseFloat(item.feature.properties[chs.mapOptions.field]))
+				}
 			}
 		})
 
@@ -375,7 +388,7 @@ function addChoroplethLayer(args){
 		createLegend();
 
 		// add markers for hi/lo values
-		mapHiLo();
+		// mapHiLo();
 	}
 
 }
@@ -401,7 +414,7 @@ function addTooltip(){
 		html += (layer.feature.properties['Current_Outreach_Date']!='') ? `Last outreach: ${layer.feature.properties['Current_Outreach_Date']}<br>` : '';
 		// html += (layer.feature.properties['CHW_commun']!='') ? `CHW: ${layer.feature.properties['CHW_commun']}<br>` : '';
 		// html += '</div>'
-
+		
 		if(html != ''){
 			html = `<div style="font-size:1.4em">${html}</div>`
 			layer.bindTooltip(html,{
@@ -444,6 +457,7 @@ function addCategoricalLayer(field){
 		
 		*/ 
 		chs.mapOptions.category_array = [];
+		chs.mapOptions.category_array_toggle = [];
 	
 		/*
 		
@@ -469,6 +483,11 @@ function addCategoricalLayer(field){
 	
 		// sort it
 		chs.mapOptions.category_array.sort();
+
+		// create a toggle reference
+		chs.mapOptions.category_array.forEach(function(item){
+			chs.mapOptions.category_array_toggle.push(true)
+		})
 	
 		/*
 		
@@ -496,6 +515,8 @@ function addCategoricalLayer(field){
 function getCategoryStyle(feature){
 	let index = chs.mapOptions.category_array.indexOf(feature.properties[chs.mapOptions.category_field])
 	// let cat = parseInt(feature.properties.Priority_Decile)
+
+
 	return {
 		stroke: true,
 		color: 'white',
@@ -505,9 +526,35 @@ function getCategoryStyle(feature){
 		fillOpacity: chs.mapOptions.fillOpacity,
 		opacity: chs.mapOptions.fillOpacity,
 	}
+}
 
+function toggleAgency(index){
 
-
+	/*
+	
+		find out if it is on or off
+	
+	*/ 
+	if(chs.mapOptions.category_array_toggle[index]){
+		fillColor = undefined;
+		chs.mapOptions.category_array_toggle[index] = false
+		$('#agency-toggle-'+index).removeClass('fa-toggle-on').addClass('fa-toggle-off')
+	}else
+	{
+		fillColor = cat_colors[index]
+		chs.mapOptions.category_array_toggle[index] = true
+		$('#agency-toggle-'+index).removeClass('fa-toggle-off').addClass('fa-toggle-on')
+	}
+	/*
+	
+		toggle it
+	
+	*/ 
+	chs.mapLayers.baselayer.eachLayer(function(layer){
+		if(layer.feature.properties.Current_Agency == chs.mapOptions.category_array[index]){
+			layer.setStyle({fillColor : fillColor})
+		}
+	})
 }
 
 /* **************************** 
@@ -571,12 +618,21 @@ function addBoundaryLayer(id_text){
 }
 
 function getStyle(feature){
+
+	if(chs.mapOptions.pop){
+		value = parseFloat(feature.properties[chs.mapOptions.field]/feature.properties[chs.mapOptions.pop]*100)
+	}
+	else{
+		value = parseFloat(feature.properties[chs.mapOptions.field])
+	}
+
 	return {
 		stroke: true,
 		color: 'white',
 		weight: 0.8,
 		fill: true,
-		fillColor: chs.mapOptions.brew.getColorInRange(feature.properties[chs.mapOptions.field]),
+		fillColor: chs.mapOptions.brew.getColorInRange(value),
+		// fillColor: chs.mapOptions.brew.getColorInRange(feature.properties[chs.mapOptions.field]),
 		fillOpacity: chs.mapOptions.fillOpacity,
 		opacity: chs.mapOptions.fillOpacity,
 	}
@@ -590,9 +646,9 @@ function joinCSV(){
 		do the joins
 	
 	*/ 
-	chs.mapLayers.baselayer.eachLayer(function(layer) {
-		featureJoinByProperty(layer.feature.properties, chs.data.csv.data, "GEOID");
-	});
+	// chs.mapLayers.baselayer.eachLayer(function(layer) {
+	// 	featureJoinByProperty(layer.feature.properties, chs.data.csv.data, "GEOID");
+	// });
 	
 	chs.mapLayers.baselayer.eachLayer(function(layer) {
 		featureJoinByProperty(layer.feature.properties, chs.data.csv2.data, "GEOID");
