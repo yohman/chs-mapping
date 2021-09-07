@@ -107,7 +107,7 @@ chs.data = {
 	// google_path:'https://docs.google.com/spreadsheets/d/e/2PACX-1vQBdJuAIqA2SBcJ-uf38wM0Ce7POFWVTFx6VnjjeC_5yLfw3HDBHDr7uOr0mAnEF1piO2DRDhuDCl2U/pub?gid=1680290540&single=true&output=csv',
 	google_path:'https://docs.google.com/spreadsheets/d/e/2PACX-1vQBdJuAIqA2SBcJ-uf38wM0Ce7POFWVTFx6VnjjeC_5yLfw3HDBHDr7uOr0mAnEF1piO2DRDhuDCl2U/pub?gid=1817338334&single=true&output=csv',
 
-	csv_path:	'data/acs_vars_results_blockgroups.csv',
+	csv_path:	'data/acs_vars_results_blockgroups.csv', // not used anymore
 	csv_path2:	'data/bg_results/bg_new.csv',
 	boundaries: [
 		{
@@ -270,8 +270,8 @@ chs.data = {
 		},
 		{
 			geography: 'bg',
-			text: 'Percent Vaccinated (June 4, 2021)',
-			id: 'vac_per',
+			text: 'Percent Vaccinated (August 6, 2021)',
+			id: 'Current_Vaccination',
 			type: 'choropleth',
 			percent: true,
 		},
