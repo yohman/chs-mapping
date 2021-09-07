@@ -174,18 +174,6 @@ chs.data = {
 			id: 'Current_Agency',
 			type: 'categorical'
 		},
-		// {
-		// 	geography: 'bg',
-		// 	text: 'Priority Decile',
-		// 	id: 'Priority_Decile',
-		// 	type: 'categorical'
-		// },
-		// {
-		// 	geography: 'bg',
-		// 	text: 'CSA Name',
-		// 	id: 'CSA_Name',
-		// 	type: 'categorical'
-		// },
 	],
 	variables: [
 			{
