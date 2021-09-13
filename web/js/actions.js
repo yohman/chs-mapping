@@ -49,7 +49,32 @@ function highlightFeature(e) {
 function resetHighlight(e) {
 	if(hover){
 		$('#charts').empty();
-		chs.mapLayers.baselayer.resetStyle(e.target);
+		// figure out what agency it is, and then if it is on/off
+		if(chs.mapOptions.category_array.length > 0){
+			agency = e.target.feature.properties.Current_Agency
+			// find out where it is in the array
+			thisindex = chs.mapOptions.category_array.indexOf(agency)
+			//is it on?
+			console.log(chs.mapOptions.category_array_toggle[thisindex])
+			// if it is off, color it original white
+			if(chs.mapOptions.category_array_toggle[thisindex] == false){
+				e.target.setStyle({				
+					stroke: true,
+					color: 'white',
+					weight: 0.8,
+					fill: true,
+					fillOpacity: chs.mapOptions.fillOpacity,
+					opacity: chs.mapOptions.fillOpacity,
+					onEachFeature: onEachFeature,
+				})
+			}
+			else{
+				chs.mapLayers.baselayer.resetStyle(e.target);
+			}
+		}
+		else {
+			chs.mapLayers.baselayer.resetStyle(e.target);
+		}
 	}
 	else{
 		chs.mapLayers.baselayer.resetStyle(e.target);

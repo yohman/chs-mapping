@@ -296,6 +296,17 @@ function onZoomEnd(){
 ***************************** */ 
 function addChoroplethLayer(args){
 
+	console.log('adding choropleth...')
+	/*
+	
+		clear category array
+	
+	*/ 
+	chs.mapOptions.category_array = [];
+	chs.mapOptions.category_array_toggle = [];
+
+
+
 	/*
 	
 		If reset requested
@@ -439,6 +450,7 @@ let cat_colors = d3.scale.category20().range()
 
 function addCategoricalLayer(field){
 
+	console.log('adding categorical layer...')
 	// empty themes
 	// $('#dropdown-layers').selectivity('clear')
 	
@@ -531,6 +543,16 @@ function getCategoryStyle(feature){
 	}
 }
 
+/*
+
+	For categorical layer, you can toggle each
+	individual category.
+
+	This function receives the index (order number)
+	that the requested category is in, and toggles
+	that index on/off
+
+*/ 
 function toggleAgency(index){
 
 	/*
