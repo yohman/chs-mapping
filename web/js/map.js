@@ -52,8 +52,9 @@ $( document ).ready(function() {
 	*/ 
 	// const csvdata = parseCsv(chs.data.csv_path)
 	const csvdata2 = parseCsv(chs.data.csv_path2)
-	const googledata = parseCsv(chs.data.google_path)
 	const geojsondata = getGeoJson(chs.data.bgs_path)
+	const googledata = parseCsv(chs.data.google_path)
+	const googledata2 = parseCsv(chs.data.google_path2)
 
 	/*
 	
@@ -64,7 +65,7 @@ $( document ).ready(function() {
 	var t0 = performance.now()
 	Promise.all(
 		// [geojsondata,csvdata,csvdata2,googledata]
-		[geojsondata,csvdata2,googledata]
+		[geojsondata,csvdata2,googledata,googledata2]
 	).then(
 		function(results){
 			var t1 = performance.now()
@@ -78,6 +79,8 @@ $( document ).ready(function() {
 			// chs.data.csv = results[1]
 			chs.data.csv2 = results[1]
 			chs.data.google = results[2]
+			chs.data.google2 = results[3]
+			chs.data.boundaries = chs.data.google2.data
 
 			/*
 			
@@ -579,6 +582,7 @@ function addBoundaryLayer(id_text){
 	// find it in the list of layers
 	layer2add = chs.data.boundaries.find(({id}) => id === id_text)
 
+	console.log(layer2add.label)
 	/*
 	
 		add boundary layer
@@ -591,7 +595,8 @@ function addBoundaryLayer(id_text){
 				weight: 1.5,
 				pane:'boundaries',
 				onEachFeature: function(feature,layer){
-					if(layer2add.label){
+					if(layer2add.label=='TRUE'){
+						console.log('drawing label...')
 						layer.bindTooltip(feature.properties[layer2add.name_field],{
 							permanent:true,
 							opacity:0.8,
@@ -609,7 +614,15 @@ function addBoundaryLayer(id_text){
 			}
 		})
 
-		$('.sidebar').append(`<div class="boundary-toggle-container" style="margin-left:10px;font-size:0.8em">Labels <i id="boundary-toggle" onclick="toggleBoundaryLabels()" class="fa fa-toggle-on" aria-hidden="true" style="font-size:1.3em"></i></div>`)
+		// toggle label on or off?
+		if(layer2add.label=='FALSE'){
+			chs.mapOptions.boundary_label_toggle = false;
+			$('.sidebar').append(`<div class="boundary-toggle-container" style="margin-left:10px;font-size:0.8em">Labels <i id="boundary-toggle" onclick="toggleBoundaryLabels()" class="fa fa-toggle-off" aria-hidden="true" style="font-size:1.3em"></i></div>`)
+		}
+		else {
+			chs.mapOptions.boundary_label_toggle = true;
+			$('.sidebar').append(`<div class="boundary-toggle-container" style="margin-left:10px;font-size:0.8em">Labels <i id="boundary-toggle" onclick="toggleBoundaryLabels()" class="fa fa-toggle-on" aria-hidden="true" style="font-size:1.3em"></i></div>`)
+		}
 				
 	}
 	else{

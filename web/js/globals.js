@@ -106,67 +106,68 @@ chs.data = {
 	bgs_path:	'data/boundaries/bg_topo.json',
 	// google_path:'https://docs.google.com/spreadsheets/d/e/2PACX-1vQBdJuAIqA2SBcJ-uf38wM0Ce7POFWVTFx6VnjjeC_5yLfw3HDBHDr7uOr0mAnEF1piO2DRDhuDCl2U/pub?gid=1680290540&single=true&output=csv',
 	google_path:'https://docs.google.com/spreadsheets/d/e/2PACX-1vQBdJuAIqA2SBcJ-uf38wM0Ce7POFWVTFx6VnjjeC_5yLfw3HDBHDr7uOr0mAnEF1piO2DRDhuDCl2U/pub?gid=1817338334&single=true&output=csv',
+	google_path2:'https://docs.google.com/spreadsheets/d/e/2PACX-1vT_wXhGkIVT9ycNcstNtxT7jInahpGrdXufF4jSWRX86SykNEdzJM8qwIhY4sClD-N2JnYuUFvHvjkA/pub?gid=0&single=true&output=csv',
 
 	csv_path:	'data/acs_vars_results_blockgroups.csv', // not used anymore
 	csv_path2:	'data/bg_results/bg_new.csv',
-	boundaries: [
-		{
-			text: 'Service Planning Areas (2012)',
-			id: 'SPA',
-			path: 'data/spa.geojson',
-			name_field: 'name',
-			label: true,
-			type: 'geojson'
-		},
-		{
-			text: 'LA County Supervisors District (2011)',
-			id: 'sd',
-			path: 'data/sd.geojson',
-			name_field: 'name',
-			label: true,
-			type: 'geojson'
-		},
-		{
-			text: 'Cities/Communities',
-			id: 'neighborhoods',
-			path: 'data/latimes_place_lacounty.geojson',
-			name_field: 'name',
-			label: true,
-			type: 'geojson'
-		},
-		{
-			text: 'LA County Regions',
-			id: 'regions',
-			path: 'data/regions.geojson',
-			name_field: 'name',
-			label: true,
-			type: 'geojson'
-		},
-		{
-			text: 'L.A. City Council District (2012)',
-			id: 'council',
-			path: 'data/council.geojson',
-			name_field: 'name',
-			label: true,
-			type: 'geojson'
-		},
-		{
-			text: 'Zipcodes',
-			id: 'zipcodes',
-			path: 'data/boundaries/zipcodes.geojson',
-			name_field: 'ZIPCODE',
-			label: true,
-			type: 'geojson'
-		},
-		{
-			text: 'L.A. Census Block Groups',
-			id: 'bg',
-			path: 'data/boundaries/bg_topo.json',
-			name_field: 'name',
-			label: false,
-			type: 'topojson'
-		},
-	],
+	// boundaries: [
+	// 	{
+	// 		text: 'Service Planning Areas (2012)',
+	// 		id: 'SPA',
+	// 		path: 'data/spa.geojson',
+	// 		name_field: 'name',
+	// 		label: true,
+	// 		type: 'geojson'
+	// 	},
+	// 	{
+	// 		text: 'LA County Supervisors District (2011)',
+	// 		id: 'sd',
+	// 		path: 'data/sd.geojson',
+	// 		name_field: 'name',
+	// 		label: true,
+	// 		type: 'geojson'
+	// 	},
+	// 	{
+	// 		text: 'Cities/Communities',
+	// 		id: 'neighborhoods',
+	// 		path: 'data/latimes_place_lacounty.geojson',
+	// 		name_field: 'name',
+	// 		label: true,
+	// 		type: 'geojson'
+	// 	},
+	// 	{
+	// 		text: 'LA County Regions',
+	// 		id: 'regions',
+	// 		path: 'data/regions.geojson',
+	// 		name_field: 'name',
+	// 		label: true,
+	// 		type: 'geojson'
+	// 	},
+	// 	{
+	// 		text: 'L.A. City Council District (2012)',
+	// 		id: 'council',
+	// 		path: 'data/council.geojson',
+	// 		name_field: 'name',
+	// 		label: true,
+	// 		type: 'geojson'
+	// 	},
+	// 	{
+	// 		text: 'Zipcodes',
+	// 		id: 'zipcodes',
+	// 		path: 'data/boundaries/zipcodes.geojson',
+	// 		name_field: 'ZIPCODE',
+	// 		label: true,
+	// 		type: 'geojson'
+	// 	},
+	// 	{
+	// 		text: 'L.A. Census Block Groups',
+	// 		id: 'bg',
+	// 		path: 'data/boundaries/bg_topo.json',
+	// 		name_field: 'name',
+	// 		label: false,
+	// 		type: 'topojson'
+	// 	},
+	// ],
 	categorical_variables: [
 		{
 			geography: 'bg',
