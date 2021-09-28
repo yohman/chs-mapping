@@ -227,13 +227,21 @@ function createMap(){
 	geocoder = L.Control.geocoder({
 		position:'topleft',
 		defaultMarkGeocode: false,
-		geocoder: new L.Control.Geocoder.Nominatim({
+		geocoder: new L.Control.Geocoder.mapbox({ 
+			apiKey: 'pk.eyJ1IjoiY2h3b2lwcm9qZWN0IiwiYSI6ImNrdTRjZXkwaTRwaWwycXBtY290MjA5d3gifQ.iyENw-MBBY3_9tMPv7frFg',
 			geocodingQueryParams: {
 				// countrycodes: 'us',
 				bounded: 1,
 				viewbox: '-119.064863, 35.0780436,-117.04887, 33.19587'
 			}
 		})
+		// geocoder: new L.Control.Geocoder.Nominatim({
+		// 	geocodingQueryParams: {
+		// 		// countrycodes: 'us',
+		// 		bounded: 1,
+		// 		viewbox: '-119.064863, 35.0780436,-117.04887, 33.19587'
+		// 	}
+		// })
 	}).addTo(chs.map);
 
 	geocoder.on('markgeocode', function(event) {
@@ -690,9 +698,9 @@ function joinCSV(){
 	});
 
 	// google sheet for "live" data
-	chs.mapLayers.baselayer.eachLayer(function(layer) {
-		featureJoinByProperty(layer.feature.properties, chs.data.google.data, "GEOID");
-	});
+	// chs.mapLayers.baselayer.eachLayer(function(layer) {
+	// 	featureJoinByProperty(layer.feature.properties, chs.data.google.data, "GEOID");
+	// });
 
 	/*
 	
