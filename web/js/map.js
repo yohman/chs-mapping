@@ -698,9 +698,9 @@ function joinCSV(){
 	});
 
 	// google sheet for "live" data
-	// chs.mapLayers.baselayer.eachLayer(function(layer) {
-	// 	featureJoinByProperty(layer.feature.properties, chs.data.google.data, "GEOID");
-	// });
+	chs.mapLayers.baselayer.eachLayer(function(layer) {
+		featureJoinByProperty(layer.feature.properties, chs.data.google.data, "GEOID");
+	});
 
 	/*
 	
