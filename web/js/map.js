@@ -697,7 +697,7 @@ function joinCSV(){
 		featureJoinByProperty(layer.feature.properties, chs.data.csv2.data, "GEOID");
 	});
 
-	// google sheet for "live" data
+	// google sheet for "live" data 
 	chs.mapLayers.baselayer.eachLayer(function(layer) {
 		featureJoinByProperty(layer.feature.properties, chs.data.google.data, "GEOID");
 	});
