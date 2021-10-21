@@ -78,7 +78,7 @@ function createSidebar(){
 			{
 				// id: '+00:00',
 				text: 'ACS 2019 5-year Estimates',
-				children: chs.data.variables,
+				children: chs.data.variables.filter(item => item.show === "TRUE"),
 			}
 		],
 		placeholder: 'Themes',
@@ -247,7 +247,7 @@ function createLegend(){
 			from = breaks[i];
 			to = breaks[i + 1];
 			if(to) {
-				if(variable.percent){
+				if(variable.percent === 'TRUE'){
 					html += `<tr><td><i style="margin-left:20px;background:${chs.mapOptions.brew.getColorInRange(to)}"></i></td>
 					<td><span style="font-size:0.8em;">${from.toFixed(0)}% &ndash; ${to.toFixed(0)}%</span></td></tr>`
 				}

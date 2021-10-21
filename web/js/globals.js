@@ -36,6 +36,7 @@ chs.mapOptions = {
 	max_geos:		'', //filtered layer of polygons with max values
 	max_geos_toggle: true,
 	boundary_label_toggle: true,
+	boundary_fill_toggle: false,
 	bounds: 		[
 		[34.840471137173814,-117.64558196067811],
 		[33.65310164305273,-118.95295500755311]
@@ -105,8 +106,15 @@ chs.data = {
 	csv2:		'',
 	bgs_path:	'data/boundaries/bg_topo.json',
 	// google_path:'https://docs.google.com/spreadsheets/d/e/2PACX-1vQBdJuAIqA2SBcJ-uf38wM0Ce7POFWVTFx6VnjjeC_5yLfw3HDBHDr7uOr0mAnEF1piO2DRDhuDCl2U/pub?gid=1680290540&single=true&output=csv',
+
+	// data
 	google_path:'https://docs.google.com/spreadsheets/d/e/2PACX-1vQBdJuAIqA2SBcJ-uf38wM0Ce7POFWVTFx6VnjjeC_5yLfw3HDBHDr7uOr0mAnEF1piO2DRDhuDCl2U/pub?gid=1817338334&single=true&output=csv',
+
+	// boundaries
 	google_path2:'https://docs.google.com/spreadsheets/d/e/2PACX-1vT_wXhGkIVT9ycNcstNtxT7jInahpGrdXufF4jSWRX86SykNEdzJM8qwIhY4sClD-N2JnYuUFvHvjkA/pub?gid=0&single=true&output=csv',
+
+	// variables
+	google_path3:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSRRN5l0jIjHBeP9-ShFLB8lzHk7O-hfVJ_WGYc4ZyZAa1f5b9D1ushQ2v8YzPfXUMe-z8wkVejWbgc/pub?gid=0&single=true&output=csv',
 
 	csv_path:	'data/acs_vars_results_blockgroups.csv', // not used anymore
 	csv_path2:	'data/bg_results/bg_new.csv',
@@ -176,108 +184,108 @@ chs.data = {
 			type: 'categorical'
 		},
 	],
-	variables: [
-			{
-			geography: 'bg',
-			text: 'Total Population',
-			id: 'Pop_total',
-			type: 'choropleth',
-			percent: false,
-		},
-		{
-			geography: 'bg',
-			text: 'Percent Limited English',
-			// id: 'Limited_Eng_per',
-			id: 'Limited_Eng',
-			pop: 'B16004_001E',
-			type: 'choropleth',
-			percent: true,
-		},
-		{
-			geography: 'bg',
-			text: 'Percent Uninsured',
-			id: 'Uninsured',
-			pop: 'B27010_001E',
-			type: 'choropleth',
-			percent: true,
-		},
-		{
-			geography: 'bg',
-			text: 'Below 100 percent of the poverty level',
-			id: 'Poverty',
-			pop: 'B17021_001E',
-			type: 'choropleth',
-			percent: true,
-		},
-		{
-			geography: 'bg',
-			text: 'Percent Hispanic or Latino',
-			id: 'Hisp',
-			pop: 'Pop_total',
-			type: 'choropleth',
-			percent: true,
-		},
-		{
-			geography: 'bg',
-			text: 'Percent Non Hispanic Asian',
-			id: 'NonHisp_asian',
-			pop: 'Pop_total',
-			type: 'choropleth',
-			percent: true,
-		},
-		{
-			geography: 'bg',
-			text: 'Percent Non Hispanic Black',
-			id: 'NonHisp_black',
-			pop: 'Pop_total',
-			type: 'choropleth',
-			percent: true,
-		},
-		{
-			geography: 'bg',
-			text: 'Percent Non Hispanic White',
-			id: 'NonHisp_white',
-			pop: 'Pop_total',
-			type: 'choropleth',
-			percent: true,
-		},
-		{
-			geography: 'bg',
-			text: 'Percent Non Hispanic Native Hawaiian and Other PI',
-			id: 'NonHisp_pi',
-			pop: 'Pop_total',
-			type: 'choropleth',
-			percent: true,
-		},
-		{
-			geography: 'bg',
-			text: 'Percent Non Hispanic American Indian and Alaska Native',
-			id: 'NonHisp_ai',
-			pop: 'Pop_total',
-			type: 'choropleth',
-			percent: true,
-		},
-		{
-			geography: 'bg',
-			text: 'Percent Vaccinated (August 6, 2021)',
-			id: 'Current_Vaccination',
-			type: 'choropleth',
-			percent: true,
-		},
-		{
-			geography: 'bg',
-			text: 'Outreach count',
-			id: 'Current_Outreach',
-			type: 'choropleth',
-			percent: false,
-		},
-		{
-			geography: 'bg',
-			text: 'Priority Decile',
-			id: 'Priority_Decile',
-			type: 'choropleth',
-			percent: false
-		},
+	// variables: [
+	// 		{
+	// 		geography: 'bg',
+	// 		text: 'Total Population',
+	// 		id: 'Pop_total',
+	// 		type: 'choropleth',
+	// 		percent: false,
+	// 	},
+	// 	{
+	// 		geography: 'bg',
+	// 		text: 'Percent Limited English',
+	// 		// id: 'Limited_Eng_per',
+	// 		id: 'Limited_Eng',
+	// 		pop: 'B16004_001E',
+	// 		type: 'choropleth',
+	// 		percent: true,
+	// 	},
+	// 	{
+	// 		geography: 'bg',
+	// 		text: 'Percent Uninsured',
+	// 		id: 'Uninsured',
+	// 		pop: 'B27010_001E',
+	// 		type: 'choropleth',
+	// 		percent: true,
+	// 	},
+	// 	{
+	// 		geography: 'bg',
+	// 		text: 'Below 100 percent of the poverty level',
+	// 		id: 'Poverty',
+	// 		pop: 'B17021_001E',
+	// 		type: 'choropleth',
+	// 		percent: true,
+	// 	},
+	// 	{
+	// 		geography: 'bg',
+	// 		text: 'Percent Hispanic or Latino',
+	// 		id: 'Hisp',
+	// 		pop: 'Pop_total',
+	// 		type: 'choropleth',
+	// 		percent: true,
+	// 	},
+	// 	{
+	// 		geography: 'bg',
+	// 		text: 'Percent Non Hispanic Asian',
+	// 		id: 'NonHisp_asian',
+	// 		pop: 'Pop_total',
+	// 		type: 'choropleth',
+	// 		percent: true,
+	// 	},
+	// 	{
+	// 		geography: 'bg',
+	// 		text: 'Percent Non Hispanic Black',
+	// 		id: 'NonHisp_black',
+	// 		pop: 'Pop_total',
+	// 		type: 'choropleth',
+	// 		percent: true,
+	// 	},
+	// 	{
+	// 		geography: 'bg',
+	// 		text: 'Percent Non Hispanic White',
+	// 		id: 'NonHisp_white',
+	// 		pop: 'Pop_total',
+	// 		type: 'choropleth',
+	// 		percent: true,
+	// 	},
+	// 	{
+	// 		geography: 'bg',
+	// 		text: 'Percent Non Hispanic Native Hawaiian and Other PI',
+	// 		id: 'NonHisp_pi',
+	// 		pop: 'Pop_total',
+	// 		type: 'choropleth',
+	// 		percent: true,
+	// 	},
+	// 	{
+	// 		geography: 'bg',
+	// 		text: 'Percent Non Hispanic American Indian and Alaska Native',
+	// 		id: 'NonHisp_ai',
+	// 		pop: 'Pop_total',
+	// 		type: 'choropleth',
+	// 		percent: true,
+	// 	},
+	// 	{
+	// 		geography: 'bg',
+	// 		text: 'Percent Vaccinated (August 6, 2021)',
+	// 		id: 'Current_Vaccination',
+	// 		type: 'choropleth',
+	// 		percent: true,
+	// 	},
+	// 	{
+	// 		geography: 'bg',
+	// 		text: 'Outreach count',
+	// 		id: 'Current_Outreach',
+	// 		type: 'choropleth',
+	// 		percent: false,
+	// 	},
+	// 	{
+	// 		geography: 'bg',
+	// 		text: 'Priority Decile',
+	// 		id: 'Priority_Decile',
+	// 		type: 'choropleth',
+	// 		percent: false
+	// 	},
 
-	],
+	// ],
 }

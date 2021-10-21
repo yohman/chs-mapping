@@ -55,6 +55,7 @@ $( document ).ready(function() {
 	const geojsondata = getGeoJson(chs.data.bgs_path)
 	const googledata = parseCsv(chs.data.google_path)
 	const googledata2 = parseCsv(chs.data.google_path2)
+	const googledata3 = parseCsv(chs.data.google_path3)
 
 	/*
 	
@@ -65,7 +66,7 @@ $( document ).ready(function() {
 	var t0 = performance.now()
 	Promise.all(
 		// [geojsondata,csvdata,csvdata2,googledata]
-		[geojsondata,csvdata2,googledata,googledata2]
+		[geojsondata,csvdata2,googledata,googledata2,googledata3]
 	).then(
 		function(results){
 			var t1 = performance.now()
@@ -80,7 +81,9 @@ $( document ).ready(function() {
 			chs.data.csv2 = results[1]
 			chs.data.google = results[2]
 			chs.data.google2 = results[3]
+			chs.data.google3 = results[4]
 			chs.data.boundaries = chs.data.google2.data
+			chs.data.variables = chs.data.google3.data
 
 			/*
 			
