@@ -1,5 +1,9 @@
 # Community Health Worker Outreach Initiative
 
+This mapping tool assists the Community Health Council, Los Angeles Department of Public Health, and Community Health Workers to strategically identify areas for targeted outreach. The user interface serves both users with a high level of expertise in mapping and data analysis, and individuals without that expertise. 
+
+Live map:
+
 https://yohman.github.io/chs-mapping/web/
 
 ## Change log
