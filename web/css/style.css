@@ -26,7 +26,7 @@ body {
 	"header header header"
 	"sidebar content dashboard"
 	"legend content dashboard"
-	/* "footer footer footer"; */
+	"footer footer footer";
 }
 
 .header {
@@ -80,7 +80,7 @@ body {
 .footer {
 	grid-area: footer;
 	padding:10px;
-	background-color: rgb(175, 175, 175);
+	background-color: rgb(255, 255, 255);
 }
 
 /* legend styles */
