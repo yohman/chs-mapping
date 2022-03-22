@@ -54,8 +54,8 @@ $( document ).ready(function() {
 	const csvdata2 = parseCsv(chs.data.csv_path2)
 	const geojsondata = getGeoJson(chs.data.bgs_path)
 	const googledata = parseCsv(chs.data.google_path)
-	const googledata2 = parseCsv(chs.data.google_path2)
-	const googledata3 = parseCsv(chs.data.google_path3)
+	const googledata2 = parseCsv(chs.data.google_path2) // gis boundaries
+	const googledata3 = parseCsv(chs.data.google_path3) // variables 
 
 	/*
 	
@@ -80,7 +80,7 @@ $( document ).ready(function() {
 			// chs.data.csv = results[1]
 			chs.data.csv2 = results[1]
 			chs.data.google = results[2]
-			chs.data.google2 = results[3]
+			chs.data.google2 = results[3] // gis boundaries
 			chs.data.google3 = results[4]
 			chs.data.boundaries = chs.data.google2.data
 			chs.data.variables = chs.data.google3.data
