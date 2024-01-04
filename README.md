@@ -4,7 +4,7 @@ This mapping tool assists the Community Health Council, Los Angeles Department o
 
 Live map:
 
-https://yohman.github.io/chs-mapping/web/
+<a href="https://yohman.github.io/chs-mapping/web/" target="_blank">https://yohman.github.io/chs-mapping/web/</a>
 
 ## Change log
 
